@@ -2,13 +2,13 @@
 
 > *Build the spine before teaching the body to move.*
 
-Renegade is an early-stage experiment in a deterministic, symbolic architecture
-for general reasoning. It is **not an ARC solver**: the repository contains no
-ARC tasks, ARC-specific representations, handcrafted ARC rules, or solver.
+Renegade is an early-stage experiment in a deterministic, symbolic
+architecture. It is **not an ARC solver**: the repository contains no ARC
+tasks, ARC-specific representations, handcrafted ARC rules, or solver.
 
 ## Current repository status
 
-This checkout implements a deliberately small execution, observation, and measurement foundation:
+This checkout implements a deliberately small foundation through measurement:
 
 - immutable, identified `Observation` values and ordered `ObservationFrame` groups;
 - exact, insertion-ordered observation registration without payload deduplication;
@@ -17,14 +17,16 @@ This checkout implements a deliberately small execution, observation, and measur
 - execution of one explicitly requested capability by `Executive`;
 - structured, ordered attempt traces and append-only in-memory execution
   records; and
+- immutable `Concept` values and categories for explicit references only; and
 - a small set of identity, evidence-reference, lifecycle-transition, and
   lineage-edge value primitives in `renegade.foundation`.
 
 The runnable example records a tiny supplied structured grid in a frame and executes an explicit dimension-measurement capability. It demonstrates receipt and measured properties, not recognition, validation, reasoning, promotion, learning, or ARC solving.
 
-The current test suite verifies the execution, observation, and measurement substrate. The
-older foundation values remain standalone primitives; observation references do
-not change their lifecycle or evidence semantics.
+The current test suite verifies the public execution, observation,
+measurement, concept-value, and foundation-primitive behavior. Concepts and
+foundation values remain standalone primitives; references do not change
+lifecycle or evidence semantics.
 
 This is the current-tree status, not a claim about every idea named in the
 repository. For exact boundaries, read [What is not implemented](#what-is-not-implemented)
@@ -89,33 +91,56 @@ steps beyond editable installation.
 | `src/renegade/concepts.py` | Minimal immutable concepts used only for explicit observation references. |
 | `src/renegade/foundation.py` | Implemented immutable primitives for identifiers, evidence references, lifecycle transition decisions, and lineage edges. |
 | `src/renegade/__main__.py` | The runnable deterministic example. |
-| `src/renegade/__init__.py` | Current public API for the execution foundation. |
-| `tests/test_core.py` | Unit tests for prior execution behavior and the module entry point. |
+| `src/renegade/__init__.py` | Current public API for the foundation through measurement. |
+| `tests/test_core.py` | Unit tests for execution behavior, the public API, and the module entry point. |
 | `tests/test_observations.py` | Focused tests for observation values, frames, registry boundaries, and execution integration. |
+| `tests/test_measurements.py` | Focused tests for measurements, measurement capabilities, registries, and execution integration. |
+| `tests/test_foundation.py` | Focused tests for identity, evidence, lifecycle-transition, and lineage primitives. |
 | `pyproject.toml` | Packaging metadata and the `renegade` console-script declaration. |
 
 ## Public API summary
 
-`renegade` exports `Measurement`, `MeasurementKind`, `MeasurementSet`, `MeasurementRegistry`, `measure_dimensions`, `measure_bounds`, `measure_observation_count`, `Observation`, `ObservationKind`, `ObservationFrame`, `ObservationRegistry`, `Concept`, `ConceptCategory`, `StableIdentifier`, `EvidenceReference`, `Capability`, `Memory`,
-`Executive`, `Workspace`, `Outcome`, `EventKind`, `ExecutionEvent`,
-`MemoryEvent`, and `double_number`. Together, they support registering a named
-callable and executing that explicitly requested callable against an observation or observation frame with an inspectable trace. Measurements compute reproducible properties; future perception will organize them, concepts will abstract, and future reasoning will interpret them. Observation equality is identity-only; equal values are not deduplicated. They do not provide interpretation, automatic capability selection, reasoning, validation, lifecycle management, or learning.
+`renegade` exports the execution API (`Capability`, `Memory`, `Executive`,
+`Workspace`, `Outcome`, `EventKind`, `ExecutionEvent`, `MemoryEvent`, and
+`double_number`); the observation API (`Observation`, `ObservationKind`,
+`ObservationFrame`, and `ObservationRegistry`); the measurement API
+(`Measurement`, `MeasurementKind`, `MeasurementSet`, `MeasurementRegistry`,
+`measure_dimensions`, `measure_bounds`, and `measure_observation_count`); and
+the reference-value API (`Concept`, `ConceptCategory`, `StableIdentifier`,
+`EvidenceKind`, and `EvidenceReference`). Together, they support registering a
+named callable and executing that explicitly requested callable against an
+observation or observation frame with an inspectable trace. Measurements
+compute reproducible properties. `Concept` values can be created explicitly,
+but there is no concept registry, extraction, or interpretation. Observation
+equality is identity-only; equal values are not deduplicated. The API does not
+provide perception, automatic capability selection, reasoning, validation,
+lifecycle management, or learning.
 
 ## Architectural roadmap
 
-- Repository Foundation ✓
-- Execution ✓
-- Identity ✓
-- Concepts ✓
-- Observation ✓
-- Measurement ← current
-- Perception
-- Semantic Relationships
-- Interpretation
-- Hypothesis Generation
-- Reasoning
-- Reflection
-- Learning
+**Implemented**
+
+- ✓ Repository Foundation
+- ✓ Identity
+- ✓ Lifecycle (explicit transition decisions only)
+- ✓ Evidence (references only)
+- ✓ Concepts (immutable values only)
+- ✓ Execution
+- ✓ Observation
+- ✓ Measurement
+
+**Current work**
+
+- Repository reconciliation and documentation verification; no new cognitive
+  subsystem is being introduced.
+
+**Future work**
+
+- Perception and percepts
+- Semantic relationships and interpretation
+- Hypothesis generation and reasoning
+- Reflection and learning
+- ARC adapter
 
 ## Documentation guide
 
@@ -139,11 +164,12 @@ implemented.
 | [LIFECYCLE.md](LIFECYCLE.md) | Specification | Intended lifecycle policy; only explicit transition-decision primitives currently exist. |
 | [LINEAGE.md](LINEAGE.md) | Specification | Intended provenance and ancestry policy; only lineage-edge primitives currently exist. |
 | [EMERGENCE.md](EMERGENCE.md) | Design rationale / historical narrative | A candidate architectural idea, not implemented emergence detection. |
-| [CONCEPTS.md](CONCEPTS.md) | Specification | Intended concept model. No `Concept` implementation exists in this checkout. |
+| [CONCEPTS.md](CONCEPTS.md) | Specification | Intended concept model beyond the current immutable `Concept` value and category. |
 | [MILESTONES.md](MILESTONES.md) | Verified-history record | Append-only milestone history and its current-tree audit correction; not a roadmap or current implementation reference by itself. |
 | [CHANGELOG.md](CHANGELOG.md) | Change record | Concise release-facing changes; it does not duplicate milestone evidence. |
 
-`docs/architecture/overview.md` describes current implementation boundaries and `docs/research/0004-observations.md` records the Pass 4 design rationale.
+`docs/architecture/overview.md` describes current implementation boundaries;
+the engineering journals record the Pass 4 and Pass 5 design choices.
 
 ## Verified history and current truth
 
@@ -163,7 +189,8 @@ than silently treating a specification or narrative as implementation.
 
 The following are intentionally absent from this checkout:
 
-- a concept registry, concept extraction, or interpretation;
+- perception, percepts, a concept registry, concept extraction, or
+  interpretation;
 - planning or general reasoning;
 - automatic capability retrieval, applicability ranking, or graph traversal;
 - validation, promotion, transfer, learning, or emergence detection;

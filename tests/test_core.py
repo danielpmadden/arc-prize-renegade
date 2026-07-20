@@ -1,10 +1,12 @@
-"""Tests for the deterministic first Renegade reasoning cycle."""
+"""Tests for the deterministic explicit Renegade execution cycle."""
 
 from __future__ import annotations
 
 import subprocess
 import sys
 import unittest
+
+import renegade
 
 from renegade import (
     Capability,
@@ -32,6 +34,19 @@ class RenegadeCoreTests(unittest.TestCase):
         self.assertIs(self.memory.capabilities["double_number"], self.capability)
         self.assertEqual(self.capability.version, "0.1.0")
         self.assertEqual(self.capability.source, "foundational primitive")
+
+    def test_public_api_has_the_documented_intentional_surface(self) -> None:
+        expected = {
+            "Capability", "Concept", "ConceptCategory", "EvidenceKind",
+            "EvidenceReference", "EventKind", "ExecutionEvent", "Executive",
+            "Measurement", "MeasurementKind", "MeasurementRegistry", "MeasurementSet",
+            "Memory", "MemoryEvent", "Observation", "ObservationFrame",
+            "ObservationKind", "ObservationRegistry", "Outcome", "StableIdentifier",
+            "Workspace", "double_number", "measure_bounds", "measure_dimensions",
+            "measure_observation_count",
+        }
+        self.assertEqual(set(renegade.__all__), expected)
+        self.assertTrue(all(hasattr(renegade, name) for name in renegade.__all__))
 
     def test_successful_execution_records_result_and_memory(self) -> None:
         workspace = self.executive.solve(

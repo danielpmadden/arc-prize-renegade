@@ -411,3 +411,34 @@ provenance, immutable ordered measurement sets, exact in-memory registry
 lookup, workspace storage, measurement execution events, and small property
 measurement capabilities. Measurements report dimensions, bounds, or counts;
 they do not identify, classify, validate, or interpret supplied material.
+
+---
+
+# Reconciliation Pass 5.5
+
+## Current-Tree Documentation Audit
+
+Status
+
+Documentation reconciliation — pending human review
+
+This append-only audit records the state reproducible from this checkout after
+the observation and measurement passes. It does not promote branch work to
+official status and does not revise earlier historical claims.
+
+The current tree implements repository foundation, identity, explicit
+lifecycle-transition decisions, evidence references, lineage edges, immutable
+concept values, execution, observation, and measurement. `Concept` and
+`ConceptCategory` exist as explicit immutable values, but no concept registry,
+relationship model, extraction, interpretation, or concept-execution subsystem
+exists.
+
+The architectural boundary after measurement is future perception. Percepts,
+object extraction, scene graphs, semantic relationships, interpretation,
+reasoning, planning, reflection, learning, transformation search, and ARC
+solving remain intentionally absent.
+
+This correction supersedes only the current-tree portion of the earlier audit
+that said no `Concept` implementation existed. The preserved Milestone 0.3
+claims about a concept registry and relationships remain unsupported by the
+current tree.

@@ -1,4 +1,4 @@
-"""Public API for Renegade's deterministic execution and observation substrate."""
+"""Public API for Renegade's deterministic foundation through measurement."""
 
 from .core import (
     Capability,

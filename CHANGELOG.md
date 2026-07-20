@@ -12,6 +12,12 @@ current tree, see [MILESTONES.md](MILESTONES.md).
 
 ### Documentation
 
+- Reconcile the README, architecture overview, concept specification, and
+  milestone audit with the observation and measurement implementation,
+  including the intentionally limited immutable `Concept` value.
+- Add an architectural roadmap that separates implemented layers, current
+  reconciliation work, and future perception-oriented work.
+
 - Add `EPISTEMOLOGY.md`, a practical status vocabulary for official,
   experimental, specification, historical, speculative, and evidence claims.
 - Add a pull-request template that asks contributors to state change status,
