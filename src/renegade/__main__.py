@@ -1,7 +1,6 @@
 """Executable demonstration of the first Renegade reasoning cycle."""
 
 from .core import Capability, Executive, Memory, Observation, double_number
-from .foundation import StableIdentifier
 
 
 def main() -> None:
@@ -12,7 +11,6 @@ def main() -> None:
             name="double_number",
             description="Multiply an integer by two.",
             function=double_number,
-            identity=StableIdentifier("capability", "double_number", 1),
         )
     )
     workspace = Executive(memory).solve(

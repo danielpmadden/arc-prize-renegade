@@ -6,18 +6,9 @@ trace recording, and memory recording. It does not validate or promote capabilit
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, TypeAlias
-
-from .foundation import (
-    EvidenceReference,
-    LifecycleState,
-    LifecycleTransition,
-    LineageEdge,
-    StableIdentifier,
-    decide_transition,
-)
 
 
 Details: TypeAlias = tuple[tuple[str, Any], ...]
@@ -30,7 +21,6 @@ class EventKind(str, Enum):
     OBSERVATION_RECORDED = "observation.recorded"
     CAPABILITY_RETRIEVED = "capability.retrieved"
     CAPABILITY_MISSING = "capability.missing"
-    CAPABILITY_INELIGIBLE = "capability.ineligible"
     EXECUTION_SUCCEEDED = "execution.succeeded"
     EXECUTION_FAILED = "execution.failed"
     MEMORY_RECORDED = "memory.recorded"
@@ -58,19 +48,15 @@ class Observation:
 
 @dataclass(frozen=True)
 class Capability:
-    """A deterministic operation with explicit identity, status, and provenance."""
+    """A bounded deterministic operation with minimal identity and provenance."""
 
     name: str
     description: str
     function: CapabilityFunction
-    identity: StableIdentifier
     version: str = "0.1.0"
     location: str = "capability"
     source: str = "foundational primitive"
     creation_reason: str = "Provide a deterministic reusable operation."
-    lifecycle_state: LifecycleState = LifecycleState.PROTOTYPE
-    lineage: tuple[LineageEdge, ...] = ()
-    lifecycle_history: tuple[LifecycleTransition, ...] = ()
 
     def __post_init__(self) -> None:
         if not isinstance(self.name, str) or not self.name:
@@ -79,26 +65,6 @@ class Capability:
             raise ValueError("capability description must be a non-empty string")
         if not callable(self.function):
             raise TypeError("capability function must be callable")
-        if self.identity.category != "capability":
-            raise ValueError("capability identity must use the capability category")
-        if any(edge.source != self.identity for edge in self.lineage):
-            raise ValueError("capability lineage edges must originate from its identity")
-
-    def transition_to(
-        self,
-        requested_state: LifecycleState,
-        reason: str,
-        evidence: tuple[EvidenceReference, ...],
-    ) -> Capability:
-        """Return a successor capability after one explicit, valid transition."""
-        transition = decide_transition(
-            self.lifecycle_state, requested_state, reason, evidence
-        )
-        return replace(
-            self,
-            lifecycle_state=requested_state,
-            lifecycle_history=(*self.lifecycle_history, transition),
-        )
 
     def execute(self, value: Any) -> Any:
         """Execute the capability; callers record any resulting failure explicitly."""
@@ -117,7 +83,7 @@ class ExecutionEvent:
 
 @dataclass(frozen=True)
 class MemoryEvent:
-    """A durable record that links an execution outcome to its provenance."""
+    """A durable record that links a successful execution to its provenance."""
 
     sequence: int
     capability_name: str
@@ -213,28 +179,9 @@ class Executive:
         workspace.record(
             EventKind.CAPABILITY_RETRIEVED,
             f"Selected capability {capability.name}.",
-            capability_identity=str(capability.identity),
             capability_name=capability.name,
             capability_version=capability.version,
-            lifecycle_state=capability.lifecycle_state.value,
         )
-        if capability.lifecycle_state in {
-            LifecycleState.DEPRECATED,
-            LifecycleState.ARCHIVED,
-            LifecycleState.RETIRED,
-        }:
-            workspace.outcome = Outcome.FAILED
-            workspace.failure_reason = (
-                f"Capability {capability.name} is not executable while "
-                f"{capability.lifecycle_state.value}."
-            )
-            workspace.record(
-                EventKind.CAPABILITY_INELIGIBLE,
-                workspace.failure_reason,
-                capability_identity=str(capability.identity),
-                lifecycle_state=capability.lifecycle_state.value,
-            )
-            return workspace
         try:
             workspace.result = capability.execute(observation.value)
         except (TypeError, ValueError) as error:
