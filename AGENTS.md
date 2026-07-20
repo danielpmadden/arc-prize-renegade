@@ -1,5 +1,9 @@
 # Renegade Contributor Guidance
 
+> **Document role: contributor guidance.** This file governs contributor
+> workflow and change constraints. It is neither a specification nor evidence
+> that a described architectural capability is implemented or verified.
+
 Before changing code, read `README.md`, `CONSTITUTION.md`, `CAPABILITY_CONTRACT.md`, `LIFECYCLE.md`, `LINEAGE.md`, and `EMERGENCE.md`. They govern design decisions; this file only operationalizes them.
 
 - Preserve determinism: do not add hidden randomness, wall-clock-dependent behavior, or unbounded search.

@@ -1,5 +1,10 @@
 # Renegade Verified Milestones
 
+> **Document role: verified-history record.** This append-only record preserves
+> milestone claims and later audit corrections. It is not a roadmap or, by
+> itself, a description of the current implementation; consult the
+> **Current-Tree Audit Correction** and `README.md` for current status.
+
 This document records the verified architectural evolution of Renegade.
 
 A milestone is not a roadmap item.
