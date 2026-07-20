@@ -15,6 +15,10 @@ from .core import (
 from .concepts import Concept, ConceptCategory
 from .foundation import EvidenceKind, EvidenceReference, StableIdentifier
 from .observations import ObservationFrame, ObservationKind, ObservationRegistry
+from .measurements import (
+    Measurement, MeasurementKind, MeasurementRegistry, MeasurementSet,
+    measure_bounds, measure_dimensions, measure_observation_count,
+)
 
 __all__ = [
     "Capability",
@@ -25,6 +29,10 @@ __all__ = [
     "EventKind",
     "ExecutionEvent",
     "Executive",
+    "Measurement",
+    "MeasurementKind",
+    "MeasurementRegistry",
+    "MeasurementSet",
     "Memory",
     "MemoryEvent",
     "Observation",
@@ -35,4 +43,7 @@ __all__ = [
     "Workspace",
     "StableIdentifier",
     "double_number",
+    "measure_bounds",
+    "measure_dimensions",
+    "measure_observation_count",
 ]

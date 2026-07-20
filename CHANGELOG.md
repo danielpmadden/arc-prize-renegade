@@ -29,6 +29,13 @@ current tree, see [MILESTONES.md](MILESTONES.md).
 
 ### Added
 
+- Add a deterministic measurement substrate with immutable identity-based values,
+  explicit observation/capability/evidence provenance, ordered sets, and exact
+  registries.
+- Add small deterministic dimension, bound, and observation-count measurement
+  capabilities plus measurement creation and workspace-recording trace events.
+
+
 - Add deterministic first-class observations, ordered observation frames, and
   exact in-memory observation registration.
 - Add explicit observation-frame execution events and a structured-input module

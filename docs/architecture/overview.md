@@ -2,10 +2,24 @@
 
 > **Document role: implementation overview.** It describes the current source tree and does not promote this branch to official status.
 
-The observation substrate is the boundary between supplied input and later perception. `Observation` records an explicit stable identity, recording kind, supported immutable payload, source, and optional evidence or concept references. Equality and hashing use `StableIdentifier` only: equal payloads, labels, or sources do not merge observations.
+```
+Environment
+    ↓
+Observation
+    ↓
+Measurement
+    ↓
+Percept (future)
+    ↓
+Concept
+    ↓
+Reasoning (future)
+```
 
-`ObservationFrame` is a non-empty ordered tuple of distinct observation identities recorded together. Its order is insertion order only; membership does not assert time, space, causality, consistency, objecthood, or semantic similarity. `ObservationRegistry` owns exact identity lookup and insertion order. It has no fuzzy lookup, validation, or inference.
+`Observation` records supplied input. `Measurement` computes one reproducible property from explicit observation references. `Measurement` is immutable and identity-based: equality and hashing use `StableIdentifier`, not a matching payload or provenance. Its value follows the observation supported-value policy, and its explicit provenance records the producing capability, source observations, evidence references, and optional caller-supplied concept references. None of those references assigns meaning or establishes truth.
 
-`Executive.solve` accepts one observation (for the prior public API) or a frame. A frame emits `observation.frame.received`, then one `observation.registered` event per supplied observation, before capability retrieval. The workspace owns a fresh registry for that execution.
+`MeasurementSet` is a non-empty immutable ordered group with a common producing capability and source observations. It rejects duplicate measurement identities; grouping adds no semantic relationship. `MeasurementRegistry` is exact and insertion-ordered. It retrieves only by identity, kind, producing capability, or source observation—never by ranking, similarity, or traversal.
 
-Concept references are identifiers chosen by the caller. They neither prove membership nor create, mutate, validate, or promote a concept. Evidence references remain pointers to material that may support later evaluation; they do not establish truth or confidence.
+Small registered capabilities `measure_dimensions`, `measure_bounds`, and `measure_observation_count` report tuple-grid dimensions, supplied-grid bounds, and frame observation count. They do not identify objects or features. When an explicitly requested capability returns a `Measurement` or `MeasurementSet`, `Executive` emits `measurement.created` and `measurement.recorded` events and registers results in the workspace's separate measurement registry.
+
+The workspace preserves observations and measurements separately. Percepts are deferred. Concepts remain distinct abstractions; caller-supplied concept references neither prove membership nor create, mutate, validate, or promote a concept. Evidence references remain pointers to material that may support later evaluation; they do not establish truth or confidence.
