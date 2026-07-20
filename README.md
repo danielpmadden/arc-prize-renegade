@@ -8,9 +8,10 @@ ARC tasks, ARC-specific representations, handcrafted ARC rules, or solver.
 
 ## Current repository status
 
-This checkout implements a deliberately small execution foundation:
+This checkout implements a deliberately small execution and observation foundation:
 
-- named `Observation` values;
+- immutable, identified `Observation` values and ordered `ObservationFrame` groups;
+- exact, insertion-ordered observation registration without payload deduplication;
 - explicitly registered `Capability` callables;
 - execution of one explicitly requested capability by `Executive`;
 - structured, ordered attempt traces and append-only in-memory execution
@@ -18,13 +19,11 @@ This checkout implements a deliberately small execution foundation:
 - a small set of identity, evidence-reference, lifecycle-transition, and
   lineage-edge value primitives in `renegade.foundation`.
 
-The runnable example registers `double_number` and executes it for the value
-`4`. It demonstrates the execution substrate; it does not demonstrate
-reasoning, validation, promotion, learning, or ARC solving.
+The runnable example records a tiny supplied structured grid in a frame and executes an explicit summary capability. It demonstrates receipt and handling, not recognition, validation, reasoning, promotion, learning, or ARC solving.
 
-The current test suite verifies the execution foundation. The foundation value
-primitives are implemented but do not yet have dedicated tests in this checkout.
-They are available as standalone values; they are not integrated into execution.
+The current test suite verifies the execution and observation substrate. The
+older foundation values remain standalone primitives; observation references do
+not change their lifecycle or evidence semantics.
 
 This is the current-tree status, not a claim about every idea named in the
 repository. For exact boundaries, read [What is not implemented](#what-is-not-implemented)
@@ -83,21 +82,22 @@ steps beyond editable installation.
 
 | Path | Role |
 | --- | --- |
-| `src/renegade/core.py` | Implemented execution foundation: observations, capabilities, workspace traces, in-memory records, and the executive. |
+| `src/renegade/observations.py` | Immutable observations, frames, supported-value normalization, and exact ordered registry. |
+| `src/renegade/core.py` | Execution foundation: capabilities, workspace traces, in-memory records, and frame handling. |
+| `src/renegade/concepts.py` | Minimal immutable concepts used only for explicit observation references. |
 | `src/renegade/foundation.py` | Implemented immutable primitives for identifiers, evidence references, lifecycle transition decisions, and lineage edges. |
 | `src/renegade/__main__.py` | The runnable deterministic example. |
 | `src/renegade/__init__.py` | Current public API for the execution foundation. |
-| `tests/test_core.py` | Unit tests for the current public execution behavior and module entry point; no dedicated foundation-primitive tests exist yet. |
+| `tests/test_core.py` | Unit tests for prior execution behavior and the module entry point. |
+| `tests/test_observations.py` | Focused tests for observation values, frames, registry boundaries, and execution integration. |
 | `pyproject.toml` | Packaging metadata and the `renegade` console-script declaration. |
 
 ## Public API summary
 
-`renegade` currently exports `Observation`, `Capability`, `Memory`,
+`renegade` exports `Observation`, `ObservationKind`, `ObservationFrame`, `ObservationRegistry`, `Concept`, `ConceptCategory`, `StableIdentifier`, `EvidenceReference`, `Capability`, `Memory`,
 `Executive`, `Workspace`, `Outcome`, `EventKind`, `ExecutionEvent`,
 `MemoryEvent`, and `double_number`. Together, they support registering a named
-callable and executing that explicitly requested callable against one
-observation with an inspectable trace. They do not provide automatic capability
-selection, reasoning, validation, lifecycle management, or learning.
+callable and executing that explicitly requested callable against an observation or observation frame with an inspectable trace. Observation equality is identity-only; equal values are not deduplicated. They do not provide interpretation, automatic capability selection, reasoning, validation, lifecycle management, or learning.
 
 ## Documentation guide
 
@@ -125,9 +125,7 @@ implemented.
 | [MILESTONES.md](MILESTONES.md) | Verified-history record | Append-only milestone history and its current-tree audit correction; not a roadmap or current implementation reference by itself. |
 | [CHANGELOG.md](CHANGELOG.md) | Change record | Concise release-facing changes; it does not duplicate milestone evidence. |
 
-There is currently no `docs/` directory. The top-level documents above are the
-complete documentation set. `README.md` is an implementation-status guide,
-not a separate architecture specification.
+`docs/architecture/overview.md` describes current implementation boundaries and `docs/research/0004-observations.md` records the Pass 4 design rationale.
 
 ## Verified history and current truth
 
@@ -147,8 +145,8 @@ than silently treating a specification or narrative as implementation.
 
 The following are intentionally absent from this checkout:
 
-- concepts or a concept registry;
-- interpretation, planning, or general reasoning;
+- a concept registry, concept extraction, or interpretation;
+- planning or general reasoning;
 - automatic capability retrieval, applicability ranking, or graph traversal;
 - validation, promotion, transfer, learning, or emergence detection;
 - persistence, probabilistic inference, neural computation; and

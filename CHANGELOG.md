@@ -26,3 +26,10 @@ current tree, see [MILESTONES.md](MILESTONES.md).
 - Define a shared documentation vocabulary so contributors can distinguish
   implementation, verified history, specifications, rationale, and guidance
   before interpreting a document.
+
+### Added
+
+- Add deterministic first-class observations, ordered observation frames, and
+  exact in-memory observation registration.
+- Add explicit observation-frame execution events and a structured-input module
+  demonstration without interpretation.
