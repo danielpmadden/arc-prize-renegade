@@ -12,6 +12,10 @@ current tree, see [MILESTONES.md](MILESTONES.md).
 
 ### Documentation
 
+- Add `EPISTEMOLOGY.md`, a practical status vocabulary for official,
+  experimental, specification, historical, speculative, and evidence claims.
+- Add a pull-request template that asks contributors to state change status,
+  verification, milestone impact, deferred work, and required human judgment.
 - Classify repository documents by whether they are specifications,
   implementation descriptions, contributor guidance, historical records, or
   design rationale.

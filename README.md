@@ -28,7 +28,9 @@ They are available as standalone values; they are not integrated into execution.
 
 This is the current-tree status, not a claim about every idea named in the
 repository. For exact boundaries, read [What is not implemented](#what-is-not-implemented)
-and the current-tree audit in [MILESTONES.md](MILESTONES.md).
+and the current-tree audit in [MILESTONES.md](MILESTONES.md). For the rules
+used to distinguish current status, history, and architecture, read
+[EPISTEMOLOGY.md](EPISTEMOLOGY.md).
 
 ## Install
 
@@ -88,6 +90,15 @@ steps beyond editable installation.
 | `tests/test_core.py` | Unit tests for the current public execution behavior and module entry point; no dedicated foundation-primitive tests exist yet. |
 | `pyproject.toml` | Packaging metadata and the `renegade` console-script declaration. |
 
+## Public API summary
+
+`renegade` currently exports `Observation`, `Capability`, `Memory`,
+`Executive`, `Workspace`, `Outcome`, `EventKind`, `ExecutionEvent`,
+`MemoryEvent`, and `double_number`. Together, they support registering a named
+callable and executing that explicitly requested callable against one
+observation with an inspectable trace. They do not provide automatic capability
+selection, reasoning, validation, lifecycle management, or learning.
+
 ## Documentation guide
 
 Read documents by their role, not as a claim that every described idea is
@@ -104,6 +115,7 @@ implemented.
 | Document | Role | Use it for |
 | --- | --- | --- |
 | [AGENTS.md](AGENTS.md) | Contributor guidance | Required contributor workflow and implementation constraints. |
+| [EPISTEMOLOGY.md](EPISTEMOLOGY.md) | Epistemic governance | How to distinguish official state, experiments, specifications, history, speculation, and evidence. |
 | [CONSTITUTION.md](CONSTITUTION.md) | Specification | The project’s enduring design principles and intended spine. |
 | [CAPABILITY_CONTRACT.md](CAPABILITY_CONTRACT.md) | Specification | Requirements that a future capability must satisfy. It is not a description of the current `Capability` dataclass. |
 | [LIFECYCLE.md](LIFECYCLE.md) | Specification | Intended lifecycle policy; only explicit transition-decision primitives currently exist. |
@@ -145,16 +157,17 @@ The following are intentionally absent from this checkout:
 The in-memory `Memory` class is an execution record and manually populated
 capability registry. It is not persistent memory or learning.
 
-## Contributor navigation
+## Recommended reading order
 
 1. Start here for current status and commands.
-2. Read [AGENTS.md](AGENTS.md), then the governing specifications listed there,
-   before changing code.
-3. Use the [package layout](#package-layout) to find the relevant source module
-   and its tests before changing behavior.
+2. Read [EPISTEMOLOGY.md](EPISTEMOLOGY.md) to interpret status claims.
+3. Read [AGENTS.md](AGENTS.md), then the governing specifications listed
+   there, before changing code.
 4. Use [MILESTONES.md](MILESTONES.md) for verified history and its audit, and
    [CHANGELOG.md](CHANGELOG.md) for concise change-oriented context.
-5. Keep specifications, implementation, evidence, validation, and historical
+5. Use the [package layout](#package-layout) to find the relevant source module
+   and its tests before changing behavior.
+6. Keep specifications, implementation, evidence, validation, and historical
    records distinct. Do not infer unimplemented behavior from an aspirational
    document.
 
