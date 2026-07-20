@@ -2,283 +2,143 @@
 
 > *Build the spine before teaching the body to move.*
 
-**ARC Prize Renegade** is an experiment in building a deterministic symbolic cognitive architecture from first principles.
+Renegade is an early-stage experiment in a deterministic, symbolic architecture
+for general reasoning. It is **not an ARC solver**: the repository contains no
+ARC tasks, ARC-specific representations, handcrafted ARC rules, or solver.
 
-It is **not** an ARC solver.
+## Current repository status
 
-Not yet.
+This checkout implements a deliberately small execution foundation:
 
-The goal is to construct the smallest correct reasoning kernel capable of growing into one.
+- named `Observation` values;
+- explicitly registered `Capability` callables;
+- execution of one explicitly requested capability by `Executive`;
+- structured, ordered attempt traces and append-only in-memory execution
+  records; and
+- a small set of identity, evidence-reference, lifecycle-transition, and
+  lineage-edge value primitives in `renegade.foundation`.
 
-This repository intentionally begins **without ARC training tasks**, **without handcrafted ARC rules**, and **without legacy solver code**. The architecture should earn the right to solve problems by first developing the machinery required to reason about them.
+The runnable example registers `double_number` and executes it for the value
+`4`. It demonstrates the execution substrate; it does not demonstrate
+reasoning, validation, promotion, learning, or ARC solving.
 
----
+The current test suite verifies the execution foundation. The foundation value
+primitives are implemented but do not yet have dedicated tests in this checkout.
+For the exact boundaries, read [What is not implemented](#what-is-not-implemented)
+and the repository audit in [MILESTONES.md](MILESTONES.md).
 
-# Philosophy
+## Install
 
-Most solvers begin with the benchmark.
+Renegade requires Python 3.11 or later and has no third-party runtime
+dependencies. From the repository root:
 
-Renegade begins with cognition.
-
-A human doesn't learn calculus by memorizing calculus.
-
-They first develop:
-
-- identity
-- counting
-- comparison
-- grouping
-- ordering
-- spatial reasoning
-- abstraction
-- composition
-
-Each concept becomes part of a larger structure that future reasoning can build upon.
-
-Renegade follows the same philosophy.
-
----
-
-# The Spine
-
-The architecture revolves around a single idea:
-
-> Intelligence is easier to build when knowledge has structure.
-
-Not every capability should be active all the time.
-
-Instead, the system should organize itself into a hierarchy of concepts, capabilities, and dependencies.
-
-```
-Perception
-│
-├── Objects
-│
-├── Geometry
-│
-├── Relations
-│
-└── Topology
-
-↓
-
-Reasoning
-
-↓
-
-Memory
-
-↓
-
-Learning
-
-↓
-
-Executive
+```bash
+python -m pip install --editable .
 ```
 
-Every concept has a place.
+## Run
 
-Every capability has parents.
+Run the deterministic demonstration:
 
-Every capability has children.
+```bash
+python -m renegade
+```
 
-Every capability knows:
+The installed console-script equivalent is:
 
-- what it depends on
-- what depends on it
-- when it should activate
-- when it should remain dormant
+```bash
+renegade
+```
 
-The executive navigates this structure instead of searching every possible tool.
+## Test and check
 
----
+Run the complete current unit-test suite:
 
-# The Workshop
+```bash
+python -m unittest discover -s tests -v
+```
 
-Imagine an enormous workshop.
+Check that all Python sources and tests compile:
 
-Thousands of tools exist.
+```bash
+python -m compileall -q src tests
+```
 
-A master craftsman doesn't dump them all onto the floor.
+Check the working-tree patch for whitespace errors:
 
-They walk directly to the cabinet.
+```bash
+git diff --check
+```
 
-Open one drawer.
+## Package layout
 
-Retrieve one tool.
+| Path | Role |
+| --- | --- |
+| `src/renegade/core.py` | Implemented execution foundation: observations, capabilities, workspace traces, in-memory records, and the executive. |
+| `src/renegade/foundation.py` | Implemented immutable primitives for identifiers, evidence references, lifecycle transition decisions, and lineage edges. |
+| `src/renegade/__main__.py` | The runnable deterministic example. |
+| `src/renegade/__init__.py` | Current public API for the execution foundation. |
+| `tests/test_core.py` | Unit tests for the current public execution behavior and module entry point. |
+| `pyproject.toml` | Packaging metadata and the `renegade` console-script declaration. |
 
-Solve the problem.
+## Documentation map
 
-Put it back.
+Read documents by their role, not as a claim that every described idea is
+implemented.
 
-Renegade should behave the same way.
+| Document | Role | Use it for |
+| --- | --- | --- |
+| [AGENTS.md](AGENTS.md) | Contributor guidance | Required contributor workflow and implementation constraints. |
+| [CONSTITUTION.md](CONSTITUTION.md) | Specification | The project’s enduring design principles and intended spine. |
+| [CAPABILITY_CONTRACT.md](CAPABILITY_CONTRACT.md) | Specification | Requirements that a future capability must satisfy. It is not a description of the current `Capability` dataclass. |
+| [LIFECYCLE.md](LIFECYCLE.md) | Specification | Intended lifecycle policy; only explicit transition-decision primitives currently exist. |
+| [LINEAGE.md](LINEAGE.md) | Specification | Intended provenance and ancestry policy; only lineage-edge primitives currently exist. |
+| [EMERGENCE.md](EMERGENCE.md) | Design rationale / historical narrative | A candidate architectural idea, not implemented emergence detection. |
+| [CONCEPTS.md](CONCEPTS.md) | Specification | Intended concept model. No `Concept` implementation exists in this checkout. |
+| [MILESTONES.md](MILESTONES.md) | Verified-history record | Append-only milestone history and its current-tree audit correction. |
+| [CHANGELOG.md](CHANGELOG.md) | Change record | Concise release-facing changes; it does not duplicate milestone evidence. |
 
-Capabilities are retrieved because they appear relevant—not because they exist.
+There is currently no `docs/` directory. The top-level documents above are the
+complete documentation set.
 
----
+## Verified history and current truth
 
-# Learning
+`MILESTONES.md` is the repository’s verified architectural-history record; it
+is not a roadmap. Its audit correction distinguishes claims preserved as
+historical text from what can be reproduced from the current source and tests.
+`CHANGELOG.md` is deliberately brief and points to milestones rather than
+repeating their evidence.
 
-Learning is **not**:
+When a document and executable code appear to disagree, inspect the source and
+tests first, then record the discrepancy rather than silently treating a
+specification as implementation. The current source tree is the operative
+description of implemented behavior.
 
-- remembering names
-- increasing counters
-- storing rewards
-- recording metadata
-- caching outputs
+## What is not implemented
 
-Learning means the architecture acquires something executable or structurally meaningful.
+The following are intentionally absent from this checkout:
 
-Examples include:
+- concepts or a concept registry;
+- interpretation, planning, or general reasoning;
+- automatic capability retrieval, applicability ranking, or graph traversal;
+- validation, promotion, transfer, learning, or emergence detection;
+- persistence, probabilistic inference, neural computation; and
+- ARC-specific data, representations, or solving.
 
-- synthesizing a reusable symbolic program
-- discovering a transferable abstraction
-- compressing multiple solutions into one concept
-- replacing literal solutions with structural ones
-- improving retrieval through verified conceptual organization
+The in-memory `Memory` class is an execution record and manually populated
+capability registry. It is not persistent memory or learning.
 
-If nothing reusable was created, nothing was learned.
+## Contributor navigation
 
----
-
-# Memory
-
-Memory exists to support reasoning—not replace it.
-
-Memories may suggest ideas.
-
-They never override evidence.
-
-Every recalled concept must still prove itself on the current problem.
-
-The architecture should remember because remembering is useful, not because storage is cheap.
-
----
-
-# Organization
-
-Knowledge should resemble a living registry.
-
-Everything has:
-
-- an address
-- relationships
-- dependencies
-- evidence
-- history
-- provenance
-
-Concepts should naturally organize themselves over time.
-
-Frequently co-occurring capabilities may become higher-order concepts.
-
-Rarely useful branches should be archived.
-
-Nothing should become active unless the executive has a reason to retrieve it.
-
----
-
-# Expansion and Consolidation
-
-Reasoning alternates between two modes.
-
-## Expansion
-
-Explore.
-
-Generate ideas.
-
-Test hypotheses.
-
-Search for new abstractions.
-
-## Consolidation
-
-Organize.
-
-Merge duplicates.
-
-Promote successful concepts.
-
-Archive weak ones.
-
-Prune unnecessary complexity.
-
-Intelligence is not endless accumulation.
-
-It is organized accumulation.
-
----
-
-# Determinism
-
-Given identical inputs:
-
-- the same observations
-- the same memory
-- the same configuration
-
-Renegade must produce identical reasoning.
-
-No hidden randomness.
-
-No stochastic search.
-
-No nondeterministic execution.
-
-Reasoning should always be reproducible.
-
----
-
-# Core Principles
-
-- Deterministic
-- Symbolic
-- Explainable
-- Modular
-- Composable
-- Hierarchical
-- Inspectable
-- Testable
-- Transfer-oriented
-- Domain-independent
-
----
-
-# Current Goal
-
-Do **not** solve ARC.
-
-Build the spine.
-
-Develop:
-
-- observations
-- representations
-- capabilities
-- symbolic programs
-- executive control
-- workspace
-- critics
-- repair
-- memory
-- retrieval
-- learning
-- transfer
-
-Only after the architecture demonstrates genuine reasoning should ARC become another domain connected to the spine.
-
----
-
-# Long-Term Vision
-
-The objective is not merely to improve an ARC benchmark.
-
-The objective is to construct a deterministic symbolic architecture capable of continually organizing its own knowledge, forming reusable abstractions, and applying previous understanding to unfamiliar problems.
-
-If successful, ARC will simply become one demonstration of a much more general system.
-
----
-
-> **"Everything must have a place before it has an implementation."**
+1. Start here for current status and commands.
+2. Read [AGENTS.md](AGENTS.md), then the governing specifications listed there,
+   before changing code.
+3. Read the relevant source module and its tests before changing behavior.
+4. Use [MILESTONES.md](MILESTONES.md) for verified history, and
+   [CHANGELOG.md](CHANGELOG.md) for concise change-oriented context.
+5. Keep specifications, implementation, evidence, validation, and historical
+   records distinct. Do not infer unimplemented behavior from an aspirational
+   document.
+
+The project’s long-term ambition is described by the specifications. The
+current implementation remains intentionally much smaller.

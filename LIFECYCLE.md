@@ -1,5 +1,9 @@
 # Lifecycle
 
+> **Document role: specification.** It describes the intended lifecycle policy.
+> The current implementation provides only lifecycle states and explicit
+> transition decisions, not the complete lifecycle described here.
+
 > "Nothing exists forever. Everything must justify its continued existence."
 
 ---

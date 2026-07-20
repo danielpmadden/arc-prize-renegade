@@ -1,5 +1,9 @@
 # Lineage
 
+> **Document role: specification.** It describes the intended provenance and
+> ancestry model. The current implementation provides lineage-edge primitives,
+> not a lineage graph or automatic ancestry preservation.
+
 > "No idea appears from nowhere. Every idea has ancestors."
 
 ---

@@ -1,4 +1,8 @@
-# CONCEPTS.md
+# Concepts
+
+> **Document role: specification.** This document describes an intended concept
+> model. No `Concept`, `ConceptRegistry`, concept relationship, or concept
+> execution implementation exists in the current repository.
 
 ## Purpose
 

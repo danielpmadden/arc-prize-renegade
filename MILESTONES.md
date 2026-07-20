@@ -1,5 +1,3 @@
-# MILESTONES.md
-
 # Renegade Verified Milestones
 
 This document records the verified architectural evolution of Renegade.
@@ -261,33 +259,55 @@ Regression eliminated before merge.
 
 ---
 
-# Current Verified Architecture
+# Current-Tree Audit Correction
 
-The current architecture consists of the following verified layers.
+This append-only correction describes what is reproducible from the current
+repository tree. It does not assert whether historical verification runs
+occurred outside this tree; it corrects claims that are not supported by the
+currently tracked implementation and tests.
 
-Execution
+- Milestone 0.2 overstates the current implementation. The tree provides
+  `StableIdentifier`, `EvidenceReference`, lifecycle states and explicit
+  transition decisions, plus lineage primitives. It does not provide lifecycle
+  history, capability eligibility, deterministic capability identity, or
+  execution restrictions. The current test suite has no dedicated tests for
+  these foundation primitives.
+- Milestone 0.3 is not implemented in the current tree. `CONCEPTS.md` is a
+  specification, but there are no `Concept`, `ConceptRegistry`, or concept
+  relationship implementation files or tests. Its claimed verification must
+  not be treated as current executable behavior.
+- The current implementation does provide `Observation`; therefore listing
+  observation as a current non-capability was inaccurate.
 
-Identity
+Future work may establish additional verified milestones only after the
+implementation, tests, and documentation required by this file’s policy are
+present in the repository.
 
-Lifecycle
+---
 
-Evidence
+# Current Implemented Architecture
 
-Lineage
+The current tree implements an execution foundation and a set of standalone
+foundation value primitives:
 
-Concepts
+- execution: observations, explicitly registered capabilities, one requested
+  capability execution, structured traces, and append-only in-memory execution
+  records;
+- identity: `StableIdentifier`;
+- evidence references: `EvidenceReference`;
+- lifecycle: states and explicit transition decisions; and
+- lineage: `LineageEdge` relationships.
 
-Each layer depends only upon previously verified layers.
-
-No verified layer may regress without explicit architectural approval.
+Only the execution foundation has dedicated tests in the current suite. The
+foundation primitives are implemented but are not currently covered by
+dedicated tests. These facts describe the present tree; they do not promote any
+future architectural layer.
 
 ---
 
 # Current Verified Non-Capabilities
 
 Renegade intentionally does not yet implement:
-
-Observation
 
 Representation
 
@@ -309,7 +329,7 @@ Automatic promotion
 
 Graph traversal
 
-Knowledge graphs
+Knowledge graphs or concept registries
 
 Persistence
 

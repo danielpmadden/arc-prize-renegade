@@ -1,5 +1,9 @@
 # Emergence
 
+> **Document role: design rationale and historical narrative.** It records an
+> aspirational candidate principle; it does not claim that emergence detection,
+> conversation processing, or promotion is implemented.
+
 > "The whole may know something the parts did not."
 
 ---
