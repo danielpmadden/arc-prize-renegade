@@ -371,3 +371,23 @@ Future milestones extend this document.
 They do not replace earlier milestones.
 
 The architectural history of Renegade is append-only.
+
+---
+
+# Milestone 0.4
+
+## Deterministic Observation Substrate
+
+Status
+
+Implementation Pass 4 — pending human review
+
+This append-only entry records the implemented observation substrate in this
+checkout. It is not a claim that branch work is merged or official.
+
+Implemented scope includes immutable identity-based observations, constrained
+immutable values, ordered frames, exact insertion-ordered registration, and
+explicit frame-receipt/registration execution events. Observation recording
+does not interpret payloads, validate them, resolve conflicts, create or alter
+concepts, or perform ARC solving. Verification commands and test evidence are
+recorded with the implementation change for human review.

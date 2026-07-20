@@ -10,6 +10,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Callable, TypeAlias
 
+from .observations import Observation, ObservationFrame, ObservationRegistry
+
 
 Details: TypeAlias = tuple[tuple[str, Any], ...]
 CapabilityFunction: TypeAlias = Callable[[Any], Any]
@@ -24,6 +26,8 @@ class EventKind(str, Enum):
     EXECUTION_SUCCEEDED = "execution.succeeded"
     EXECUTION_FAILED = "execution.failed"
     MEMORY_RECORDED = "memory.recorded"
+    OBSERVATION_FRAME_RECEIVED = "observation.frame.received"
+    OBSERVATION_REGISTERED = "observation.registered"
 
 
 class Outcome(str, Enum):
@@ -32,18 +36,6 @@ class Outcome(str, Enum):
     PENDING = "pending"
     SUCCEEDED = "succeeded"
     FAILED = "failed"
-
-
-@dataclass(frozen=True)
-class Observation:
-    """A named value presented as evidence to the system."""
-
-    name: str
-    value: Any
-
-    def __post_init__(self) -> None:
-        if not isinstance(self.name, str) or not self.name:
-            raise ValueError("observation name must be a non-empty string")
 
 
 @dataclass(frozen=True)
@@ -90,6 +82,8 @@ class MemoryEvent:
     capability_version: str
     observation_name: str
     outcome: Outcome
+    observation_identity: str | None = None
+    frame_identity: str | None = None
 
 
 @dataclass
@@ -104,15 +98,23 @@ class Memory:
         self.capabilities[capability.name] = capability
 
     def record_execution(
-        self, capability: Capability, observation: Observation, outcome: Outcome
+        self,
+        capability: Capability,
+        observation: Observation | None,
+        outcome: Outcome,
+        frame: ObservationFrame | None = None,
     ) -> MemoryEvent:
         """Append a provenance-preserving record of an execution attempt."""
         event = MemoryEvent(
             sequence=len(self.history) + 1,
             capability_name=capability.name,
             capability_version=capability.version,
-            observation_name=observation.name,
+            observation_name=(
+                observation.name or str(observation.identity) if observation else "frame"
+            ),
             outcome=outcome,
+            observation_identity=str(observation.identity) if observation else None,
+            frame_identity=str(frame.identity) if frame else None,
         )
         self.history.append(event)
         return event
@@ -122,7 +124,9 @@ class Memory:
 class Workspace:
     """The inspectable active state for one deterministic reasoning attempt."""
 
-    observation: Observation
+    observation: Observation | None = None
+    frame: ObservationFrame | None = None
+    observations: ObservationRegistry = field(default_factory=ObservationRegistry)
     result: Any | None = None
     outcome: Outcome = Outcome.PENDING
     failure_reason: str | None = None
@@ -146,25 +150,49 @@ class Executive:
     def __init__(self, memory: Memory) -> None:
         self.memory = memory
 
-    def solve(self, observation: Observation, capability_name: str) -> Workspace:
+    def solve(
+        self, observation: Observation | ObservationFrame, capability_name: str
+    ) -> Workspace:
         """Run observation → retrieval → execution → result → trace → memory.
 
         Invalid request objects raise ``TypeError`` before a workspace can exist.
         Missing capabilities and capability input errors instead return a failed,
         inspectable workspace with an explanatory event trace.
         """
-        if not isinstance(observation, Observation):
-            raise TypeError("observation must be an Observation")
+        if not isinstance(observation, (Observation, ObservationFrame)):
+            raise TypeError("observation must be an Observation or ObservationFrame")
         if not isinstance(capability_name, str) or not capability_name:
             raise ValueError("capability_name must be a non-empty string")
 
-        workspace = Workspace(observation=observation)
-        workspace.record(
-            EventKind.OBSERVATION_RECORDED,
-            f"Observed {observation.name}.",
-            observation_name=observation.name,
-            value=observation.value,
+        frame = observation if isinstance(observation, ObservationFrame) else None
+        primary = (
+            observation if isinstance(observation, Observation) else observation.observations[0]
         )
+        workspace = Workspace(observation=primary, frame=frame)
+        if frame is None:
+            workspace.observations.register(primary)
+            workspace.record(
+                EventKind.OBSERVATION_RECORDED,
+                f"Observed {primary.name or primary.identity}.",
+                observation_name=primary.name,
+                observation_identity=str(primary.identity),
+                value=primary.value,
+            )
+        else:
+            workspace.record(
+                EventKind.OBSERVATION_FRAME_RECEIVED,
+                f"Received observation frame {frame.identity}.",
+                frame_identity=str(frame.identity),
+                observation_count=len(frame.observations),
+            )
+            for item in frame:
+                workspace.observations.register(item)
+                workspace.record(
+                    EventKind.OBSERVATION_REGISTERED,
+                    f"Registered observation {item.identity}.",
+                    observation_identity=str(item.identity),
+                    observation_kind=item.kind.value,
+                )
         capability = self.memory.capabilities.get(capability_name)
         if capability is None:
             workspace.outcome = Outcome.FAILED
@@ -183,7 +211,7 @@ class Executive:
             capability_version=capability.version,
         )
         try:
-            workspace.result = capability.execute(observation.value)
+            workspace.result = capability.execute(frame if frame is not None else primary.value)
         except (TypeError, ValueError) as error:
             workspace.outcome = Outcome.FAILED
             workspace.failure_reason = str(error)
@@ -203,7 +231,7 @@ class Executive:
                 result=workspace.result,
             )
 
-        memory_event = self.memory.record_execution(capability, observation, workspace.outcome)
+        memory_event = self.memory.record_execution(capability, primary, workspace.outcome, frame)
         workspace.record(
             EventKind.MEMORY_RECORDED,
             f"Recorded execution of {capability.name} in memory.",
