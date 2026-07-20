@@ -1,5 +1,9 @@
 # The Renegade Constitution
 
+> **Document role: specification.** This document defines enduring design
+> principles and intended direction. It does not describe the full current
+> implementation; begin with `README.md` for current status.
+
 > "Build the spine before teaching the body to move."
 
 ---

@@ -1,5 +1,10 @@
 # Renegade Capability Contract
 
+> **Document role: specification.** This is the admission contract for future
+> architectural capabilities. The current minimal `Capability` implementation
+> does not yet satisfy every requirement below; see `README.md` for its actual
+> scope.
+
 A capability is a bounded, deterministic unit of reusable reasoning.
 
 Every capability must satisfy this contract.
