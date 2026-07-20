@@ -1,22 +1,19 @@
-"""Executable demonstration of deterministic observation handling."""
+"""Executable demonstration of deterministic observation and measurement handling."""
 
 from .core import Capability, Executive, Memory
 from .foundation import StableIdentifier
+from .measurements import measure_dimensions
 from .observations import Observation, ObservationFrame, ObservationKind
 
 
 def main() -> None:
-    """Run a deterministic, minimal observation-frame execution example."""
+    """Run an explicit observation-frame measurement example."""
     memory = Memory()
     memory.remember_capability(
         Capability(
-            name="summarize_frame",
-            description="Return explicit observation-frame metadata without interpretation.",
-            function=lambda frame: {
-                "observation_count": len(frame.observations),
-                "frame_identity": str(frame.identity),
-                "kinds": tuple(item.kind.value for item in frame),
-            },
+            name="measure_dimensions",
+            description="Measure supplied tuple-grid height and width.",
+            function=measure_dimensions,
         )
     )
     observation = Observation(
@@ -28,13 +25,13 @@ def main() -> None:
     frame = ObservationFrame(
         identity=StableIdentifier("frame", "example-grid", 1), observations=(observation,)
     )
-    workspace = Executive(memory).solve(frame, "summarize_frame")
+    workspace = Executive(memory).solve(frame, "measure_dimensions")
 
     print("ARC Prize Renegade")
     print("-------------------")
     for event in workspace.trace:
         print(f"{event.sequence}. [{event.kind.value}] {event.message}")
-    print(f"Summary: {workspace.result}")
+    print(f"Measurement: {workspace.result.value}")
 
 
 if __name__ == "__main__":

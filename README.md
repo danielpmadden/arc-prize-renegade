@@ -8,10 +8,11 @@ ARC tasks, ARC-specific representations, handcrafted ARC rules, or solver.
 
 ## Current repository status
 
-This checkout implements a deliberately small execution and observation foundation:
+This checkout implements a deliberately small execution, observation, and measurement foundation:
 
 - immutable, identified `Observation` values and ordered `ObservationFrame` groups;
 - exact, insertion-ordered observation registration without payload deduplication;
+- immutable identity-based measurements, exact measurement registration, and small deterministic property-measurement capabilities;
 - explicitly registered `Capability` callables;
 - execution of one explicitly requested capability by `Executive`;
 - structured, ordered attempt traces and append-only in-memory execution
@@ -19,9 +20,9 @@ This checkout implements a deliberately small execution and observation foundati
 - a small set of identity, evidence-reference, lifecycle-transition, and
   lineage-edge value primitives in `renegade.foundation`.
 
-The runnable example records a tiny supplied structured grid in a frame and executes an explicit summary capability. It demonstrates receipt and handling, not recognition, validation, reasoning, promotion, learning, or ARC solving.
+The runnable example records a tiny supplied structured grid in a frame and executes an explicit dimension-measurement capability. It demonstrates receipt and measured properties, not recognition, validation, reasoning, promotion, learning, or ARC solving.
 
-The current test suite verifies the execution and observation substrate. The
+The current test suite verifies the execution, observation, and measurement substrate. The
 older foundation values remain standalone primitives; observation references do
 not change their lifecycle or evidence semantics.
 
@@ -83,6 +84,7 @@ steps beyond editable installation.
 | Path | Role |
 | --- | --- |
 | `src/renegade/observations.py` | Immutable observations, frames, supported-value normalization, and exact ordered registry. |
+| `src/renegade/measurements.py` | Immutable measurements, sets, provenance, exact registry, and small property capabilities. |
 | `src/renegade/core.py` | Execution foundation: capabilities, workspace traces, in-memory records, and frame handling. |
 | `src/renegade/concepts.py` | Minimal immutable concepts used only for explicit observation references. |
 | `src/renegade/foundation.py` | Implemented immutable primitives for identifiers, evidence references, lifecycle transition decisions, and lineage edges. |
@@ -94,10 +96,26 @@ steps beyond editable installation.
 
 ## Public API summary
 
-`renegade` exports `Observation`, `ObservationKind`, `ObservationFrame`, `ObservationRegistry`, `Concept`, `ConceptCategory`, `StableIdentifier`, `EvidenceReference`, `Capability`, `Memory`,
+`renegade` exports `Measurement`, `MeasurementKind`, `MeasurementSet`, `MeasurementRegistry`, `measure_dimensions`, `measure_bounds`, `measure_observation_count`, `Observation`, `ObservationKind`, `ObservationFrame`, `ObservationRegistry`, `Concept`, `ConceptCategory`, `StableIdentifier`, `EvidenceReference`, `Capability`, `Memory`,
 `Executive`, `Workspace`, `Outcome`, `EventKind`, `ExecutionEvent`,
 `MemoryEvent`, and `double_number`. Together, they support registering a named
-callable and executing that explicitly requested callable against an observation or observation frame with an inspectable trace. Observation equality is identity-only; equal values are not deduplicated. They do not provide interpretation, automatic capability selection, reasoning, validation, lifecycle management, or learning.
+callable and executing that explicitly requested callable against an observation or observation frame with an inspectable trace. Measurements compute reproducible properties; future perception will organize them, concepts will abstract, and future reasoning will interpret them. Observation equality is identity-only; equal values are not deduplicated. They do not provide interpretation, automatic capability selection, reasoning, validation, lifecycle management, or learning.
+
+## Architectural roadmap
+
+- Repository Foundation ✓
+- Execution ✓
+- Identity ✓
+- Concepts ✓
+- Observation ✓
+- Measurement ← current
+- Perception
+- Semantic Relationships
+- Interpretation
+- Hypothesis Generation
+- Reasoning
+- Reflection
+- Learning
 
 ## Documentation guide
 

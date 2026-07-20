@@ -11,6 +11,7 @@ from enum import Enum
 from typing import Any, Callable, TypeAlias
 
 from .observations import Observation, ObservationFrame, ObservationRegistry
+from .measurements import Measurement, MeasurementRegistry, MeasurementSet
 
 
 Details: TypeAlias = tuple[tuple[str, Any], ...]
@@ -28,6 +29,8 @@ class EventKind(str, Enum):
     MEMORY_RECORDED = "memory.recorded"
     OBSERVATION_FRAME_RECEIVED = "observation.frame.received"
     OBSERVATION_REGISTERED = "observation.registered"
+    MEASUREMENT_CREATED = "measurement.created"
+    MEASUREMENT_RECORDED = "measurement.recorded"
 
 
 class Outcome(str, Enum):
@@ -127,6 +130,7 @@ class Workspace:
     observation: Observation | None = None
     frame: ObservationFrame | None = None
     observations: ObservationRegistry = field(default_factory=ObservationRegistry)
+    measurements: MeasurementRegistry = field(default_factory=MeasurementRegistry)
     result: Any | None = None
     outcome: Outcome = Outcome.PENDING
     failure_reason: str | None = None
@@ -224,6 +228,20 @@ class Executive:
             )
         else:
             workspace.outcome = Outcome.SUCCEEDED
+            produced = (workspace.result.measurements if isinstance(workspace.result, MeasurementSet)
+                        else (workspace.result,) if isinstance(workspace.result, Measurement) else ())
+            for measurement in produced:
+                workspace.record(
+                    EventKind.MEASUREMENT_CREATED,
+                    f"Capability {capability.name} created measurement {measurement.identity}.",
+                    measurement_identity=str(measurement.identity), measurement_kind=measurement.kind.value,
+                )
+                workspace.measurements.register(measurement)
+                workspace.record(
+                    EventKind.MEASUREMENT_RECORDED,
+                    f"Recorded measurement {measurement.identity} in workspace.",
+                    measurement_identity=str(measurement.identity),
+                )
             workspace.record(
                 EventKind.EXECUTION_SUCCEEDED,
                 f"Capability {capability.name} produced a result.",

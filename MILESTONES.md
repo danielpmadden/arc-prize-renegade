@@ -391,3 +391,23 @@ explicit frame-receipt/registration execution events. Observation recording
 does not interpret payloads, validate them, resolve conflicts, create or alter
 concepts, or perform ARC solving. Verification commands and test evidence are
 recorded with the implementation change for human review.
+
+---
+
+# Milestone 0.5
+
+## Deterministic Measurement Substrate
+
+Status
+
+Implementation Pass 5 — pending human review
+
+This append-only entry records the measurement substrate implemented in this
+checkout. It is not a claim that branch work is merged or official.
+
+Implemented scope includes immutable identity-based measurements, constrained
+immutable measurement values, explicit observation/capability/evidence
+provenance, immutable ordered measurement sets, exact in-memory registry
+lookup, workspace storage, measurement execution events, and small property
+measurement capabilities. Measurements report dimensions, bounds, or counts;
+they do not identify, classify, validate, or interpret supplied material.

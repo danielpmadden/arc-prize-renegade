@@ -110,7 +110,8 @@ class RenegadeCoreTests(unittest.TestCase):
             text=True,
         )
         self.assertIn("ARC Prize Renegade", completed.stdout)
-        self.assertIn("[execution.succeeded]", completed.stdout)
+        self.assertIn("[measurement.created]", completed.stdout)
+        self.assertIn("Measurement: FrozenValueMapping(entries=(('height', 2), ('width', 2)))", completed.stdout)
 
 
 if __name__ == "__main__":
