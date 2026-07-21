@@ -24,7 +24,7 @@ class GeneratorTests(unittest.TestCase):
         payload = batch[0].task_json()
         self.assertEqual(set(payload), {"train", "test"})
         self.assertEqual(len(payload["train"]), 2)
-        self.assertIn("output", payload["test"][0])
+        self.assertNotIn("output", payload["test"][0])
 
     def test_cli_writes_reproducible_task_and_private_sidecar(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -45,4 +45,4 @@ class GeneratorTests(unittest.TestCase):
 
     def test_invalid_arguments_are_rejected(self):
         with self.assertRaises(ValueError): generate_task(1, difficulty=4)
-        with self.assertRaises(ValueError): generate_batch(1, 0)
+        self.assertEqual(generate_batch(1, 0), ())

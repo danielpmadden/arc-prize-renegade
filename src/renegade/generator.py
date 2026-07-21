@@ -1,163 +1,140 @@
-"""Program-first, deterministic synthetic symbolic-task generation.
+"""Authoritative deterministic synthetic ARC-shaped task generator.
 
-Generated inputs are new grids sampled from a seeded local PRNG.  Outputs are
-always executions of :mod:`renegade.solver` programs; no ARC data is read,
-embedded, or required.
+Private provenance is deliberately separate from :meth:`public_json`; callers
+must explicitly request private metadata or hidden labels for evaluation.
 """
 from __future__ import annotations
 
 from dataclasses import dataclass
+from hashlib import sha256
+import json
 from random import Random
 from typing import Any
 
 from .solver import Grid, Operation, Program, execute
 from .tasks import Task, load_task
 
+DIFFICULTIES = {
+    1: {"depth": 1, "families": ("recolor", "rotate", "reflect", "translate"), "size": (4, 7)},
+    2: {"depth": 2, "families": ("recolor",), "size": (5, 8)},
+    3: {"depth": 3, "families": ("recolor", "reflect"), "size": (6, 9)},
+}
 
-@dataclass(frozen=True)
-class GeneratedTask:
-    """A canonical task plus private generation provenance and ground truth."""
 
-    task: Task
-    seed: int
-    difficulty: int
-    program: Program
-    metadata: tuple[tuple[str, Any], ...]
-
-    def task_json(self) -> dict[str, Any]:
-        """Return canonical ARC-shaped data; it deliberately excludes metadata."""
-        return {
-            "train": [
-                {"input": _json_grid(pair.input_grid.raw_grid), "output": _json_grid(pair.output_grid.raw_grid)}
-                for pair in self.task.training_pairs
-            ],
-            "test": [
-                {"input": _json_grid(grid.raw_grid), "output": _json_grid(expected.raw_grid)}
-                for grid, expected in zip(self.task.test_inputs, self.task.expected_outputs)
-            ],
-        }
-
-    def metadata_json(self) -> dict[str, Any]:
-        """Return private provenance suitable for a sidecar file, never solver input."""
-        return {
-            "task_id": self.task.identifier,
-            "seed": self.seed,
-            "difficulty": self.difficulty,
-            "program": self.program.canonical,
-            **dict(self.metadata),
-        }
+def canonical_hash(value: Any) -> str:
+    """SHA-256 over canonical JSON, used only as a reproducible corpus key."""
+    return sha256(json.dumps(value, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
 
 def _json_grid(grid: Grid) -> list[list[Any]]:
     return [list(row) for row in grid]
 
 
-def _world(random: Random, *, minimum_size: int = 4, background: int | None = None, required_color: int | None = None) -> Grid:
-    """Make a non-degenerate rectangular grid with a variable background."""
-    height, width = random.randint(minimum_size, 7), random.randint(minimum_size, 7)
-    background = random.randrange(4) if background is None else background
-    grid = [[background for _ in range(width)] for _ in range(height)]
-    # At least two non-background cells avoids identity-only sparse worlds.
-    color = (background + random.randint(1, 8)) % 10
-    for _ in range(random.randint(2, max(2, height * width // 3))):
-        row, column = random.randrange(height), random.randrange(width)
-        grid[row][column] = color if random.random() < 0.75 else random.randrange(10)
-    if required_color is not None:
-        grid[random.randrange(height)][random.randrange(width)] = required_color
+@dataclass(frozen=True)
+class GeneratedTask:
+    """A generated task, private program, and bounded-generation evidence."""
+    task: Task
+    seed: int
+    difficulty: int
+    program: Program
+    metadata: tuple[tuple[str, Any], ...]
+
+    def public_json(self) -> dict[str, Any]:
+        """Canonical public ARC JSON. Test labels and all provenance are absent."""
+        return {"train": [{"input": _json_grid(p.input_grid.raw_grid), "output": _json_grid(p.output_grid.raw_grid)} for p in self.task.training_pairs],
+                "test": [{"input": _json_grid(g.raw_grid)} for g in self.task.test_inputs]}
+
+    def task_json(self) -> dict[str, Any]:
+        """Backward-compatible alias for the public serialization."""
+        return self.public_json()
+
+    def private_json(self) -> dict[str, Any]:
+        """Private sidecar including hidden labels; never pass this to a solver."""
+        return {"task_id": self.task.identifier, "seed": self.seed, "difficulty": self.difficulty,
+                "program": self.program.canonical, "hidden_test_outputs": [_json_grid(g.raw_grid) for g in self.task.expected_outputs if g is not None],
+                **dict(self.metadata)}
+
+    def metadata_json(self) -> dict[str, Any]:
+        """Compatibility name for private sidecar serialization."""
+        return self.private_json()
+
+    @property
+    def public_hash(self) -> str: return canonical_hash(self.public_json())
+    @property
+    def program_hash(self) -> str: return canonical_hash({"program": self.program.canonical})
+
+
+def difficulty_spec(level: int) -> dict[str, Any]:
+    if level not in DIFFICULTIES:
+        raise ValueError(f"unsupported difficulty {level}; supported values are 1, 2, 3")
+    return dict(DIFFICULTIES[level])
+
+
+def _world(random: Random, level: int) -> Grid:
+    low, high = DIFFICULTIES[level]["size"]
+    height, width = random.randint(low, high), random.randint(low, high)
+    grid = [[0] * width for _ in range(height)]
+    # 1 is mandatory so both recolors in composed programs are effective.
+    grid[random.randrange(height)][random.randrange(width)] = 1
+    for _ in range(random.randint(level + 2, max(level + 2, height * width // 3))):
+        r, c = random.randrange(height), random.randrange(width)
+        grid[r][c] = random.choice((1, 1, 1, 4, 5, 6))
     return tuple(tuple(row) for row in grid)
 
 
-def _recolor_program(random: Random, grid: Grid) -> Program:
-    colors = sorted({cell for row in grid for cell in row}, key=repr)
-    source = next((color for color in colors if color != grid[0][0]), colors[0])
-    target = (int(source) + random.randint(1, 8)) % 10 if isinstance(source, int) else source
-    return Program((Operation.make("recolor", mapping=((source, target),)),))
-
-
-def _single_program(random: Random, grid: Grid) -> Program:
-    """Choose only operations that can execute on every generated rectangular world."""
-    choice = random.choice(("recolor", "rotate", "reflect", "translate"))
-    if choice == "recolor":
-        return _recolor_program(random, grid)
-    if choice == "rotate":
-        return Program((Operation.make("rotate", turns=random.choice((1, 2, 3))),))
-    if choice == "reflect":
-        return Program((Operation.make("reflect", axis=random.choice(("horizontal", "vertical"))),))
-    background = max((cell for row in grid for cell in row), key=lambda value: sum(row.count(value) for row in grid))
-    return Program((Operation.make("translate", offset=random.choice(((0, 1), (1, 0), (0, -1), (-1, 0))), background=background),))
-
-
-def _program(random: Random, grid: Grid, difficulty: int) -> Program:
-    depth = 1 if difficulty == 1 else min(difficulty, 3)
-    operations: list[Operation] = []
-    current = grid
-    for _ in range(depth):
-        operation = _single_program(random, current).operations[0]
-        operations.append(operation)
-        current = execute(Program((operation,)), current)
+def _program(random: Random, level: int) -> Program:
+    if level == 1:
+        choice = random.choice(("recolor", "rotate", "reflect", "translate"))
+        if choice == "recolor": return Program((Operation.make("recolor", mapping=((1, 2),)),))
+        if choice == "rotate": return Program((Operation.make("rotate", turns=random.choice((1, 2, 3))),))
+        if choice == "reflect": return Program((Operation.make("reflect", axis=random.choice(("horizontal", "vertical"))),))
+        return Program((Operation.make("translate", offset=random.choice(((0, 1), (1, 0), (0, -1), (-1, 0))), background=0),))
+    operations = [Operation.make("recolor", mapping=((1, 2),)), Operation.make("recolor", mapping=((2, 3),))]
+    if level == 3: operations.append(Operation.make("reflect", axis=random.choice(("horizontal", "vertical"))))
     return Program(tuple(operations))
 
 
+def _effective(program: Program, grid: Grid) -> bool:
+    current = grid
+    for operation in program.operations:
+        following = execute(Program((operation,)), current)
+        if following == current: return False
+        current = following
+    return True
+
+
 def validate_generated(generated: GeneratedTask) -> None:
-    """Fail explicitly if the private program cannot replay every stored example."""
+    """Verify replay and effective-operation invariants for every stored label."""
     for index, pair in enumerate(generated.task.training_pairs, 1):
         if execute(generated.program, pair.input_grid.raw_grid) != pair.output_grid.raw_grid:
             raise ValueError(f"generated program does not reproduce training pair {index}")
-    for index, (input_grid, output_grid) in enumerate(zip(generated.task.test_inputs, generated.task.expected_outputs), 1):
-        if output_grid is None or execute(generated.program, input_grid.raw_grid) != output_grid.raw_grid:
+    for index, (source, expected) in enumerate(zip(generated.task.test_inputs, generated.task.expected_outputs), 1):
+        if expected is None or execute(generated.program, source.raw_grid) != expected.raw_grid:
             raise ValueError(f"generated program does not reproduce test output {index}")
 
 
-def generate_task(seed: int, *, difficulty: int = 1, training_pairs: int = 2, test_pairs: int = 1) -> GeneratedTask:
-    """Generate one reproducible program-first task with at least two examples."""
-    if not isinstance(seed, int):
-        raise TypeError("seed must be an integer")
-    if not 1 <= difficulty <= 3:
-        raise ValueError("difficulty must be between 1 and 3 in the current generator")
-    if training_pairs < 2 or test_pairs < 1:
-        raise ValueError("generation requires at least two training and one test pair")
+def generate_task(seed: int, *, difficulty: int = 1, training_pairs: int = 2, test_pairs: int = 1, max_attempts: int = 100) -> GeneratedTask:
+    if not isinstance(seed, int): raise TypeError("seed must be an integer")
+    difficulty_spec(difficulty)
+    if training_pairs < 2 or test_pairs < 1: raise ValueError("generation requires at least two training and one test pair")
+    if max_attempts < 1: raise ValueError("max_attempts must be positive")
     random = Random(seed)
-    # Fix generation context first so every sampled world is compatible with the
-    # same program rather than accidentally making later examples identity cases.
-    mode = random.choice(("recolor", "rotate", "reflect", "translate"))
-    if mode == "recolor":
-        program = Program((Operation.make("recolor", mapping=((1, 2),)),))
-        world_options = {"background": 0, "required_color": 1}
-    elif mode == "translate":
-        program = Program((Operation.make("translate", offset=random.choice(((0, 1), (1, 0), (0, -1), (-1, 0))), background=0),))
-        world_options = {"background": 0, "required_color": 1}
-    elif mode == "rotate":
-        program = Program((Operation.make("rotate", turns=random.choice((1, 2, 3))),))
-        world_options = {}
-    else:
-        program = Program((Operation.make("reflect", axis=random.choice(("horizontal", "vertical"))),))
-        world_options = {}
-    if difficulty > 1:
-        # A compatible recolor makes a deterministic composition without a
-        # second language or per-example parameter mutation.
-        program = Program(program.operations + (Operation.make("recolor", mapping=((2, 3),)),))
-        world_options = {**world_options, "required_color": 1}
-    if difficulty > 2:
-        program = Program(program.operations + (Operation.make("reflect", axis="vertical"),))
-    inputs = [_world(random, **world_options) for _ in range(training_pairs + test_pairs)]
-    data = {
-        "train": [{"input": _json_grid(grid), "output": _json_grid(execute(program, grid))} for grid in inputs[:training_pairs]],
-        "test": [{"input": _json_grid(grid), "output": _json_grid(execute(program, grid))} for grid in inputs[training_pairs:]],
-    }
-    operation_names = tuple(operation.kind for operation in program.operations)
-    generated = GeneratedTask(
-        task=load_task(data, f"synthetic-{seed}-{difficulty}", "synthetic program-first generator"), seed=seed,
-        difficulty=difficulty, program=program,
-        metadata=(("program_depth", len(program.operations)), ("operations", operation_names),
-                  ("training_pair_count", training_pairs), ("test_pair_count", test_pairs),
-                  ("grid_sizes", tuple((len(grid), len(grid[0])) for grid in inputs)),
-                  ("color_count", len({cell for grid in inputs for row in grid for cell in row}))),
-    )
-    validate_generated(generated)
-    return generated
+    for attempt in range(1, max_attempts + 1):
+        program = _program(random, difficulty)
+        inputs = [_world(random, difficulty) for _ in range(training_pairs + test_pairs)]
+        if not all(_effective(program, grid) for grid in inputs): continue
+        data = {"train": [{"input": _json_grid(x), "output": _json_grid(execute(program, x))} for x in inputs[:training_pairs]],
+                "test": [{"input": _json_grid(x), "output": _json_grid(execute(program, x))} for x in inputs[training_pairs:]]}
+        generated = GeneratedTask(load_task(data, f"synthetic-{seed}-{difficulty}", "synthetic program-first generator"), seed, difficulty, program,
+            (("program_depth", len(program.operations)), ("operations", tuple(x.kind for x in program.operations)),
+             ("attempts", attempt), ("rejected_attempts", attempt - 1), ("training_pair_count", training_pairs), ("test_pair_count", test_pairs)))
+        validate_generated(generated)
+        return generated
+    raise RuntimeError(f"generation exhausted {max_attempts} attempts without an effective task")
 
-def generate_batch(seed: int, count: int, *, difficulty: int = 1) -> tuple[GeneratedTask, ...]:
-    """Generate deterministic unique-seed tasks without global generator state."""
-    if count < 1:
-        raise ValueError("count must be positive")
-    return tuple(generate_task(seed + offset, difficulty=difficulty) for offset in range(count))
+
+def generate_batch(seed: int, count: int, *, difficulty: int = 1, **configuration: Any) -> tuple[GeneratedTask, ...]:
+    """Generate an ordered seeded batch. Seed ``seed + index`` identifies each task."""
+    difficulty_spec(difficulty)
+    if count < 0: raise ValueError("count must be non-negative")
+    return tuple(generate_task(seed + index, difficulty=difficulty, **configuration) for index in range(count))

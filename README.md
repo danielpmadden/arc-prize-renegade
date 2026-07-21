@@ -154,11 +154,13 @@ grid tasks without reading or embedding ARC datasets.  It samples bounded
 compositions from the solver's executable operations, constructs input worlds,
 and derives every training and hidden test output by replaying that program.
 Use `--seed`, `--difficulty`, `--count`, and `--output synthetic_tasks/` for
-reproducible exports.  The JSON metadata records the seed, operation sequence,
-depth, and bounded generation attempt; it is provenance for research and is
-not solver input.  Current difficulty levels increase program depth through
-level 3 and scene complexity thereafter; they do not claim object-selection or
-branching operations that the shared solver language does not implement.
+reproducible exports. Public task JSON deliberately omits test labels and all
+generator provenance; a private `.meta.json` sidecar records seed, operation
+sequence, depth, hidden labels, and bounded generation attempt. Levels 1--3
+have exact, tested depth and world-size semantics; unsupported levels fail.
+Use `python -m renegade.audit_generation` and `python -m renegade.experiment`
+to measure generator diversity and the current solver against public JSON.
+These are generator-native measurements, not official ARC evaluation.
 
 ## Deterministic ARC Solver Vertical Slice
 
