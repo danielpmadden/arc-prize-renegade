@@ -224,7 +224,7 @@ def _fits(operation: Operation, pairs: tuple[tuple[Grid, Grid], ...]) -> bool:
     except (KeyError, TypeError, ValueError): return False
 
 
-def _infer_primitives(pairs: tuple[tuple[Grid, Grid], ...]) -> tuple[Program, ...]:
+def _infer_primitives(pairs: tuple[tuple[Grid, Grid], ...], *, include_object: bool = True) -> tuple[Program, ...]:
     """Fit parameterized one-step hypotheses to arbitrary aligned tuples."""
     candidates = [Operation.make("identity")]
     candidates += [Operation.make("rotate", turns=turns) for turns in (1,2,3)]
@@ -239,28 +239,30 @@ def _infer_primitives(pairs: tuple[tuple[Grid, Grid], ...]) -> tuple[Program, ..
     backgrounds = {background(source) for source, _ in pairs}
     if len(backgrounds) == 1:
         bg = next(iter(backgrounds)); candidates += [Operation.make("crop", background=bg), Operation.make("fill", background=bg, color="enclosing"), Operation.make("outline", background=bg)]
-        candidates += [Operation.make("extract_object", background=bg, selector=kind.value) for kind in SelectorKind]
+        if include_object:
+            candidates += [Operation.make("extract_object", background=bg, selector=kind.value) for kind in SelectorKind]
         # Search uses a deliberately smaller subset of the public predicate
         # vocabulary; all predicates remain executable, while search cost stays bounded.
         search_predicates = (PredicateKind.ALL, PredicateKind.BORDER, PredicateKind.INTERIOR,
                              PredicateKind.LARGEST, PredicateKind.SMALLEST, PredicateKind.WIDEST,
                              PredicateKind.TALLEST)
         dimension_changes = any((len(source), len(source[0])) != (len(target), len(target[0])) for source, target in pairs)
-        for predicate in search_predicates:
-            candidates.append(Operation.make("render_objects", background=bg, predicate=predicate.value, canvas="input"))
-            if dimension_changes:
-                candidates.append(Operation.make("render_objects", background=bg, predicate=predicate.value, canvas="bbox"))
-            for color in sorted({v for _, target in pairs for row in target for v in row}, key=repr):
-                candidates.append(Operation.make("recolor_objects", background=bg, predicate=predicate.value, color=color))
-        if dimension_changes:
+        if include_object:
             for predicate in search_predicates:
-                for axis in ("horizontal", "vertical"):
-                    for gap in (0, 1):
-                        candidates.append(Operation.make("repeat_object", background=bg, predicate=predicate.value, count="object_count", axis=axis, gap=gap))
-        for reference in SelectorKind:
-            for relation in (RelationKind.LEFT_OF, RelationKind.RIGHT_OF, RelationKind.ABOVE, RelationKind.BELOW, RelationKind.SAME_SHAPE, RelationKind.SAME_COLOR):
-                for canvas in ("input", "bbox"):
-                    candidates.append(Operation.make("render_related", background=bg, reference=reference.value, relation=relation.value, canvas=canvas))
+                candidates.append(Operation.make("render_objects", background=bg, predicate=predicate.value, canvas="input"))
+                if dimension_changes:
+                    candidates.append(Operation.make("render_objects", background=bg, predicate=predicate.value, canvas="bbox"))
+                for color in sorted({v for _, target in pairs for row in target for v in row}, key=repr):
+                    candidates.append(Operation.make("recolor_objects", background=bg, predicate=predicate.value, color=color))
+            if dimension_changes:
+                for predicate in search_predicates:
+                    for axis in ("horizontal", "vertical"):
+                        for gap in (0, 1):
+                            candidates.append(Operation.make("repeat_object", background=bg, predicate=predicate.value, count="object_count", axis=axis, gap=gap))
+            for reference in SelectorKind:
+                for relation in (RelationKind.LEFT_OF, RelationKind.RIGHT_OF, RelationKind.ABOVE, RelationKind.BELOW, RelationKind.SAME_SHAPE, RelationKind.SAME_COLOR):
+                    for canvas in ("input", "bbox"):
+                        candidates.append(Operation.make("render_related", background=bg, reference=reference.value, relation=relation.value, canvas=canvas))
         h, w = len(pairs[0][0]), len(pairs[0][0][0])
         candidates += [Operation.make("translate", offset=(dr,dc), background=bg) for dr in range(-h,h+1) for dc in range(-w,w+1)]
     return tuple(Program((op,)) for op in candidates if _fits(op, pairs))
@@ -280,8 +282,12 @@ def _prefix_operations(sources: tuple[Grid, ...], targets: tuple[Grid, ...], con
         # Crop is a general dimension-changing primitive.  It is included in
         # prefixes so later fitted operations can consume a smaller state.
         ops.append(Operation.make("crop", background=bg))
-        ops += [Operation.make("extract_object", background=bg, selector=kind.value) for kind in SelectorKind]
-        ops += [Operation.make("render_objects", background=bg, predicate=predicate.value, canvas=canvas) for predicate in (PredicateKind.ALL, PredicateKind.BORDER, PredicateKind.INTERIOR, PredicateKind.LARGEST, PredicateKind.SMALLEST, PredicateKind.WIDEST, PredicateKind.TALLEST) for canvas in ("input", "bbox")]
+        # Object operations are fitted as complete one-step hypotheses.  They
+        # are intentionally not prefix generators yet: every such prefix
+        # creates a fresh scene for every training pair and multiplied the
+        # depth-two state frontier without a compositional curriculum that
+        # justifies that cost.  This preserves their executable/searchable
+        # one-step behavior while keeping composition bounds architectural.
         ops += [Operation.make("translate", offset=(dr,dc), background=bg) for dr in range(-config.max_displacement,config.max_displacement+1) for dc in range(-config.max_displacement,config.max_displacement+1) if (dr,dc) != (0,0)]
     return tuple(ops)
 
@@ -332,7 +338,9 @@ def solve_task(task: Task, *, max_depth: int = 2, max_candidates: int = 512, con
         prefixes = dict(sorted(next_prefixes.items(), key=lambda item: item[1].canonical)[:config.max_prefix_states])
         telemetry["search_by_depth"][str(depth)]["unique_intermediate_states"] = len(prefixes)
         for state, prefix in prefixes.items():
-            for final in _infer_primitives(tuple(zip(state, targets))):
+            # Object operations are deliberately excluded from fitted finals
+            # until an explicitly bounded object-composition grammar exists.
+            for final in _infer_primitives(tuple(zip(state, targets)), include_object=False):
                 program = Program(prefix.operations + final.operations)
                 if program.depth != depth + 1: continue
                 telemetry["search_by_depth"][str(depth + 1)]["complete_programs_attempted"] += 1

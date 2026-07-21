@@ -215,3 +215,12 @@ constructively generator-supported subset. Use `--sampling natural` to observe
 native seeded sampling, or `--sampling balanced` for even eligible-slot
 allocation. Generated programs pass prefix-effectiveness and stage-ablation
 checks; these generator-native results remain distinct from ARC transfer.
+
+## Current-tree reconciliation (2026-07-21)
+
+The early structural-only statements above are preserved as historical context
+but no longer fully describe this tree. The repository now also contains an
+**experimental**, bounded deterministic ARC solver and local/official evaluator
+harness described below. It remains a narrow symbolic program-search system,
+not evidence of general reasoning, learning, or official ARC transfer. See the
+[current constitutional alignment review](docs/reports/constitutional-alignment-review-2026-07-21.md) and the machine-readable dormant [Seed Bank](docs/knowledge/seed-bank.json).

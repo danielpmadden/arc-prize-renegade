@@ -337,3 +337,32 @@ Never build for today's benchmark.
 Always build for tomorrow's unknown problem.
 
 If the architecture becomes capable enough, benchmarks become consequences rather than goals.
+
+---
+
+# Constitutional Baseline (2026-07-21)
+
+This baseline reconciles the enduring constitution with the current tree. ARC
+is Renegade's primary proving ground, while broader symbolic-cognition language
+is architectural direction rather than demonstrated capability. Renegade is a
+deterministic, bounded, inspectable symbolic ARC research system: a proposed
+program must reproduce every public training output exactly; evaluator-private
+test outputs must not enter solving, ranking, fitting, ambiguity resolution, or
+search termination. Ambiguity, bounds, and failures are evidence, not success.
+
+A concept name, observer signal, symbolic representation, executable operation,
+searchable operation family, synthetic result, and official ARC result are
+different claims. New capabilities require defined semantics, deterministic
+bounds, provenance, tests, and the capability contract. Reusable composition
+is preferred over task identifiers or one-off rules. Structured records—not
+post-hoc prose—ground explanations. Architectural integrity outranks benchmark
+headlines.
+
+## Amendments
+
+A constitutional amendment is an append-only record under
+`docs/governance/amendments/`. It must include identifier, title, status, date,
+modified claim, original claim, replacement claim, reason, evidence,
+compatibility/code/test implications, migration status, decision authority, and
+commit. Only accepted amendments modify this baseline; implementation status
+does not itself confer acceptance.
