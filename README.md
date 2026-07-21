@@ -203,9 +203,12 @@ evaluation-only report comparison.  `python -m renegade.characterize
 
 Implemented program operations are identity, global recoloring, rotation,
 reflection, non-background crop, bounded translation, enclosed-region fill,
-and outline. Short deterministic compositions are enumerated at depth two.
-A prediction is not called test-correct unless a separately available expected
-test output is compared after solving.
+outline, and the documented scene-object operations. The complete executable
+operation inventory is maintained against the solver executor and includes
+object extraction, object rendering, object recoloring, bounded object
+repetition, and relation-based rendering. Short deterministic compositions are
+enumerated at depth two. A prediction is not called test-correct unless a
+separately available expected test output is compared after solving.
 
 ### Synthetic diversity controls
 

@@ -17,6 +17,14 @@ from .scene import ObjectPredicate, ObjectSelector, PredicateKind, RelationKind,
 
 Grid = tuple[tuple[Any, ...], ...]
 
+# This is the executor contract.  Inventory and generation metadata import this
+# value rather than maintaining an independent, potentially stale operation list.
+SUPPORTED_OPERATION_NAMES = frozenset({
+    "identity", "recolor", "rotate", "reflect", "crop", "extract_object",
+    "render_objects", "recolor_objects", "repeat_object", "render_related",
+    "translate", "fill", "outline",
+})
+
 
 class ChangeKind(str, Enum):
     UNCHANGED = "unchanged"; RECOLORED = "recolored"; MOVED = "moved"
