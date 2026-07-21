@@ -476,3 +476,13 @@ Implemented immutable identity-based structural relationship records, bounded ex
 
 ## Pass 8 — Structural invariants (experimental branch)
 Added immutable, identity-based invariant records that compress connected SAME_VALUE, SAME_COORDINATE_SHAPE, SAME_CELL_COUNT, SAME_BOUNDS_SIZE, and TRANSLATED_COPY relationship groups. The pipeline records invariants after relationships and the playground reports them. Invariants are structural regularities, not concepts, interpretations, hypotheses, reasoning, learning, or ARC solving.
+
+## Pass 9 — Structural archetypes (experimental branch)
+
+Added immutable, identity-based structural archetypes derived exclusively from
+structural invariant records. The exact vocabulary comprises SingleCell,
+HorizontalLine, VerticalLine, FilledRectangle, HollowRectangle, Square,
+LinearChain, TranslationArray, and Checkerboard. Archetypes retain invariant
+provenance and frame context, are recorded separately in the workspace, and do
+not introduce concepts, semantic association, interpretation, hypotheses,
+reasoning, learning, prediction, or ARC solving.

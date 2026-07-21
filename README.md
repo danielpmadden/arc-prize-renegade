@@ -39,3 +39,19 @@ See `AGENTS.md`, `EPISTEMOLOGY.md`, and `MILESTONES.md` for contributor guidance
 ## Structural invariants
 
 The pipeline also derives immutable, identity-based structural invariants from existing relationship records: `SameValueGroup`, `SameShapeGroup`, `SameCellCountGroup`, `SameBoundsGroup`, and `TranslationFamily`. They compress connected groups of exact relationships, preserve relationship provenance and frame context, and never inspect raw observations directly. An invariant is not a concept, semantic label, interpretation, hypothesis, prediction, or reasoning result. The playground's **INVARIANTS** section displays deterministic members and translation vectors where applicable.
+
+## Structural archetypes
+
+The final implemented structural layer is **archetypes**: immutable,
+identity-based exact motifs derived solely from structural invariants. The
+initial vocabulary is `SingleCell`, `HorizontalLine`, `VerticalLine`,
+`FilledRectangle`, `HollowRectangle`, `Square`, `LinearChain`,
+`TranslationArray`, and `Checkerboard`. Archetypes preserve invariant
+provenance and frame context; they never inspect raw observations and are not
+concepts, semantic labels, interpretations, hypotheses, reasoning, learning,
+or predictions. The playground reports an **ARCHETYPES** section.
+
+The boundary is: relationships record pairwise structure → invariants compress
+exact relationship regularities → archetypes recognize exact structural motifs
+→ a future concept-association layer may attach meaning. No concept association
+exists in this checkout.

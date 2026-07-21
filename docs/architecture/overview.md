@@ -30,3 +30,17 @@ Pairwise region analysis is deterministic registration order and bounded to 64 p
 
 ## Structural invariants (Pass 8)
 Invariants are a separate layer after relationships: they consume only registered structural relationships and deterministically compress connected endpoint groups. `SameValueGroup`, `SameShapeGroup`, `SameCellCountGroup`, and `SameBoundsGroup` select their corresponding exact relationship kind. `TranslationFamily` additionally preserves one exact translation vector. They preserve relationship identities and frame context, but do not inspect observations, attach concepts, or claim semantic meaning.
+
+## Structural archetypes (Pass 9)
+Archetypes follow invariants in the deterministic pipeline. `Archetype` is an
+immutable identity-based record with exact invariant references, a producing
+capability, frame context, evidence, and inspectable derivation metadata.
+`derive_archetypes` consumes only invariant records; it never receives or
+inspects observations, percepts, or relationships. `ArchetypeRegistry` remains
+a dedicated workspace registry. The `ARCHETYPES` playground section reports
+only deterministic structural summaries.
+
+The architectural boundary is explicit: relationships are pairwise structural
+facts; invariants compress exact relationship regularities; archetypes recognize
+exact reusable forms from those invariants; **future** concept association may
+attach meaning. No such association or semantic interpretation is implemented.

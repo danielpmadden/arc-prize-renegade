@@ -9,6 +9,7 @@ from .observations import Observation, ObservationFrame, ObservationKind, _norma
 from .percepts import Percept, form_connected_regions, form_frame_percept
 from .relationships import PerceptGraph, RelationshipKind, StructuralRelationship, derive_relationships
 from .invariants import Invariant, derive_invariants
+from .archetypes import Archetype, derive_archetypes
 
 def normalize_grid(value: Any) -> tuple[tuple[Any, ...], ...]:
     if not isinstance(value, (list, tuple)) or not value: raise ValueError("grid must be a non-empty array of rows")
@@ -28,6 +29,7 @@ class PerceptPipelineResult:
     relationships: tuple[StructuralRelationship, ...]
     percept_graph: PerceptGraph
     invariants: tuple[Invariant, ...]
+    archetypes: tuple[Archetype, ...]
     trace: tuple[Any, ...]
 
 def inspect_grid(value: Any, name: str = "grid") -> PerceptPipelineResult:
@@ -74,4 +76,11 @@ def inspect_grid(value: Any, name: str = "grid") -> PerceptPipelineResult:
         workspace.invariants.register(invariant)
         workspace.record(EventKind.INVARIANT_RECORDED, f"Recorded invariant {invariant.identity}.", invariant_identity=str(invariant.identity))
     workspace.record(EventKind.EXECUTION_SUCCEEDED, "Invariant derivation completed.", capability_name="derive_invariants")
-    return PerceptPipelineResult(grid, frame, workspace.observations.all(), workspace.measurements.all(), all_percepts[0], all_percepts[1:], workspace.relationships.all(), workspace.percept_graph, workspace.invariants.all(), tuple(workspace.trace))
+    workspace.record(EventKind.CAPABILITY_RETRIEVED, "Requested archetype capabilities.", capability_name="derive_archetypes")
+    workspace.record(EventKind.CAPABILITY_STARTED, "Started archetype derivation.", capability_name="derive_archetypes")
+    for archetype in derive_archetypes(workspace.invariants.all(), frame.identity):
+        workspace.record(EventKind.ARCHETYPE_CREATED, f"Created archetype {archetype.identity}.", archetype_identity=str(archetype.identity), archetype_kind=archetype.kind.value)
+        workspace.archetypes.register(archetype)
+        workspace.record(EventKind.ARCHETYPE_RECORDED, f"Recorded archetype {archetype.identity}.", archetype_identity=str(archetype.identity))
+    workspace.record(EventKind.EXECUTION_SUCCEEDED, "Archetype derivation completed.", capability_name="derive_archetypes")
+    return PerceptPipelineResult(grid, frame, workspace.observations.all(), workspace.measurements.all(), all_percepts[0], all_percepts[1:], workspace.relationships.all(), workspace.percept_graph, workspace.invariants.all(), workspace.archetypes.all(), tuple(workspace.trace))
