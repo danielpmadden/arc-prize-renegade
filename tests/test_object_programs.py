@@ -35,4 +35,26 @@ class ObjectProgramTests(unittest.TestCase):
         result=solve_task(task,config=SearchConfig(max_depth=1,max_candidates=512))
         self.assertEqual(result.predictions,(((0,9,0,4),(0,9,0,0)),))
         self.assertIn('recolor_objects', result.selected_program.canonical)
+
+    def test_solver_composes_scene_selection_with_grid_recolor(self):
+        # The selected object changes colour and position across examples, so
+        # neither a whole-grid recolour nor a one-step object program fits.
+        task = load_task({
+            'train': [
+                {'input': [[0,2,0,0], [0,2,0,3], [0,2,0,0]],
+                 'output': [[7], [7], [7]]},
+                {'input': [[4,0,0,0], [4,4,4,1], [0,0,0,1]],
+                 'output': [[7,0,0], [7,7,7]]},
+            ],
+            'test': [{'input': [[0,5,0,0], [0,5,0,6], [0,5,0,0]]}],
+        }, 'scene-prefix-recolor')
+        result = solve_task(task, config=SearchConfig(max_depth=2, max_candidates=512))
+        self.assertEqual(result.predictions, (((7,), (7,), (7,)),))
+        self.assertIsNotNone(result.selected_program)
+        self.assertEqual(result.selected_program.depth, 2)
+        self.assertIn('recolor_objects', result.selected_program.canonical)
+        self.assertTrue(
+            'extract_object' in result.selected_program.canonical
+            or 'render_objects' in result.selected_program.canonical
+        )
 if __name__ == '__main__': unittest.main()
