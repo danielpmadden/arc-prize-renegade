@@ -44,6 +44,8 @@ class RenegadeCoreTests(unittest.TestCase):
             "ObservationKind", "ObservationRegistry", "Outcome", "StableIdentifier",
             "Workspace", "double_number", "measure_bounds", "measure_dimensions",
             "measure_observation_count",
+            "Percept", "PerceptKind", "PerceptRegistry", "PerceptSet", "PerceptPipelineResult",
+            "form_connected_regions", "form_frame_percept", "inspect_grid",
         }
         self.assertEqual(set(renegade.__all__), expected)
         self.assertTrue(all(hasattr(renegade, name) for name in renegade.__all__))

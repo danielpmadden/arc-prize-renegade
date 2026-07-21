@@ -10,6 +10,11 @@ current tree, see [MILESTONES.md](MILESTONES.md).
 
 ## Unreleased
 
+### Added
+
+- Add immutable percepts, exact percept registration, explicit whole-frame and
+  four-directional same-value region formation, and a deterministic playground.
+
 ### Documentation
 
 - Record that the reconciliation audit is merged and that the repository is

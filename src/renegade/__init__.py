@@ -19,6 +19,8 @@ from .measurements import (
     Measurement, MeasurementKind, MeasurementRegistry, MeasurementSet,
     measure_bounds, measure_dimensions, measure_observation_count,
 )
+from .percepts import Percept, PerceptKind, PerceptRegistry, PerceptSet, form_connected_regions, form_frame_percept
+from .pipeline import PerceptPipelineResult, inspect_grid
 
 __all__ = [
     "Capability",
@@ -46,4 +48,6 @@ __all__ = [
     "measure_bounds",
     "measure_dimensions",
     "measure_observation_count",
+    "Percept", "PerceptKind", "PerceptRegistry", "PerceptSet",
+    "PerceptPipelineResult", "form_connected_regions", "form_frame_percept", "inspect_grid",
 ]

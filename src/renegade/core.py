@@ -12,6 +12,7 @@ from typing import Any, Callable, TypeAlias
 
 from .observations import Observation, ObservationFrame, ObservationRegistry
 from .measurements import Measurement, MeasurementRegistry, MeasurementSet
+from .percepts import Percept, PerceptRegistry, PerceptSet
 
 
 Details: TypeAlias = tuple[tuple[str, Any], ...]
@@ -31,6 +32,9 @@ class EventKind(str, Enum):
     OBSERVATION_REGISTERED = "observation.registered"
     MEASUREMENT_CREATED = "measurement.created"
     MEASUREMENT_RECORDED = "measurement.recorded"
+    CAPABILITY_STARTED = "capability.started"
+    PERCEPT_CREATED = "percept.created"
+    PERCEPT_RECORDED = "percept.recorded"
 
 
 class Outcome(str, Enum):
@@ -131,6 +135,7 @@ class Workspace:
     frame: ObservationFrame | None = None
     observations: ObservationRegistry = field(default_factory=ObservationRegistry)
     measurements: MeasurementRegistry = field(default_factory=MeasurementRegistry)
+    percepts: PerceptRegistry = field(default_factory=PerceptRegistry)
     result: Any | None = None
     outcome: Outcome = Outcome.PENDING
     failure_reason: str | None = None
@@ -242,6 +247,15 @@ class Executive:
                     f"Recorded measurement {measurement.identity} in workspace.",
                     measurement_identity=str(measurement.identity),
                 )
+            produced_percepts = (workspace.result.percepts if isinstance(workspace.result, PerceptSet)
+                                 else (workspace.result,) if isinstance(workspace.result, Percept) else ())
+            for percept in produced_percepts:
+                workspace.record(EventKind.PERCEPT_CREATED,
+                    f"Capability {capability.name} created percept {percept.identity}.",
+                    percept_identity=str(percept.identity), percept_kind=percept.kind.value)
+                workspace.percepts.register(percept)
+                workspace.record(EventKind.PERCEPT_RECORDED,
+                    f"Recorded percept {percept.identity} in workspace.", percept_identity=str(percept.identity))
             workspace.record(
                 EventKind.EXECUTION_SUCCEEDED,
                 f"Capability {capability.name} produced a result.",

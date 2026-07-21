@@ -153,6 +153,30 @@ def _grid(observation: Observation) -> tuple[int, int]:
     return len(value), width
 
 
+def _frame_grid(frame: ObservationFrame) -> tuple[int, int, tuple[StableIdentifier, ...]]:
+    """Read either the legacy first tuple grid or a complete coordinate-cell frame."""
+    if len(frame.observations) == 1:
+        candidate = frame.observations[0].value
+        if (isinstance(candidate, tuple) and len(candidate) == 2
+                and isinstance(candidate[0], tuple) and len(candidate[0]) == 2
+                and not isinstance(candidate[1], tuple)):
+            return 1, 1, (frame.observations[0].identity,)
+        height, width = _grid(frame.observations[0])
+        return height, width, (frame.observations[0].identity,)
+    coordinates = []
+    for item in frame:
+        value = item.value
+        if not (isinstance(value, tuple) and len(value) == 2 and isinstance(value[0], tuple) and len(value[0]) == 2):
+            raise TypeError("grid measurement requires tuple-grid or coordinate cell observations")
+        coordinates.append(value[0])
+    if not all(all(isinstance(part, int) and not isinstance(part, bool) and part >= 0 for part in coordinate) for coordinate in coordinates):
+        raise TypeError("cell coordinates must be non-negative integer pairs")
+    height, width = max(row for row, _ in coordinates) + 1, max(column for _, column in coordinates) + 1
+    if len(set(coordinates)) != len(coordinates) or len(coordinates) != height * width:
+        raise ValueError("cell observations must form a complete rectangle")
+    return height, width, tuple(item.identity for item in frame)
+
+
 def _measurement_identity(kind: str, observation: Observation) -> StableIdentifier:
     return StableIdentifier("measurement", f"{kind}-{observation.identity.local_name}", observation.identity.revision)
 
@@ -162,9 +186,9 @@ def measure_dimensions(frame: ObservationFrame) -> Measurement:
     if not isinstance(frame, ObservationFrame):
         raise TypeError("measure_dimensions requires an ObservationFrame")
     observation = frame.observations[0]
-    height, width = _grid(observation)
+    height, width, references = _frame_grid(frame)
     return Measurement(_measurement_identity("dimensions", observation), MeasurementKind.DIMENSION,
-                       {"height": height, "width": width}, (observation.identity,), "measure_dimensions")
+                       {"height": height, "width": width}, references, "measure_dimensions")
 
 
 def measure_bounds(frame: ObservationFrame) -> Measurement:
@@ -172,10 +196,10 @@ def measure_bounds(frame: ObservationFrame) -> Measurement:
     if not isinstance(frame, ObservationFrame):
         raise TypeError("measure_bounds requires an ObservationFrame")
     observation = frame.observations[0]
-    height, width = _grid(observation)
+    height, width, references = _frame_grid(frame)
     return Measurement(_measurement_identity("bounds", observation), MeasurementKind.BOUND,
                        {"column_max": width - 1, "column_min": 0, "row_max": height - 1, "row_min": 0},
-                       (observation.identity,), "measure_bounds")
+                       references, "measure_bounds")
 
 
 def measure_observation_count(frame: ObservationFrame) -> Measurement:

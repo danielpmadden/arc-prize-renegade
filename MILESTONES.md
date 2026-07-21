@@ -455,3 +455,18 @@ pre-merge entries above.
 - Reconciliation Pass 5.5 was merged into main.
 - Observation and measurement are now part of the current official repository.
 - Perception remains the next unimplemented architectural layer.
+
+---
+
+# Milestone 0.6
+
+## Deterministic Percept Formation and Playground
+
+Status: Implementation Pass 6 — pending human review.
+
+Implemented immutable identity-based percepts with provenance, ordered sets,
+exact registries, whole-frame formation, deterministic four-directional
+same-value region formation, workspace separation, trace events, and the
+`python -m renegade.playground` JSON-grid inspection tool. Verification uses
+the documented unit, compilation, module, and diff checks. Semantic
+interpretation, reasoning, learning, and ARC solving remain absent.

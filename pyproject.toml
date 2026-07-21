@@ -17,6 +17,7 @@ dependencies = []
 
 [project.scripts]
 renegade = "renegade.__main__:main"
+renegade-playground = "renegade.playground:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

@@ -57,6 +57,22 @@ The installed console-script equivalent is:
 renegade
 ```
 
+Inspect the deterministic percept pipeline (built-in example, inline JSON,
+file, or standard input):
+
+```bash
+python -m renegade.playground
+python -m renegade.playground --grid '[[1,0,1],[0,0,0],[1,0,1]]'
+python -m renegade.playground --file examples/grid.json
+echo '[[1,0],[0,1]]' | python -m renegade.playground --stdin
+```
+
+`renegade-playground` is the installed equivalent. Percepts are now
+implemented, but perception is limited to explicit deterministic whole-frame
+and four-directional connected-region formation. Connected regions are
+structural percepts, not recognized objects; concepts are not automatically
+assigned, and interpretation and reasoning remain absent.
+
 ## Test and check
 
 Run the complete current unit-test suite:
@@ -87,6 +103,9 @@ steps beyond editable installation.
 | --- | --- |
 | `src/renegade/observations.py` | Immutable observations, frames, supported-value normalization, and exact ordered registry. |
 | `src/renegade/measurements.py` | Immutable measurements, sets, provenance, exact registry, and small property capabilities. |
+| `src/renegade/percepts.py` | Immutable percepts, sets, exact registry, and explicit structural formation capabilities. |
+| `src/renegade/pipeline.py` | Explicit supplied-grid observation, measurement, and percept orchestration. |
+| `src/renegade/playground.py` | Plain deterministic JSON-grid inspection CLI. |
 | `src/renegade/core.py` | Execution foundation: capabilities, workspace traces, in-memory records, and frame handling. |
 | `src/renegade/concepts.py` | Minimal immutable concepts used only for explicit observation references. |
 | `src/renegade/foundation.py` | Implemented immutable primitives for identifiers, evidence references, lifecycle transition decisions, and lineage edges. |
@@ -128,11 +147,13 @@ lifecycle management, or learning.
 - ✓ Execution
 - ✓ Observation
 - ✓ Measurement
+- ✓ Percept substrate and deterministic initial formation
+- ✓ Playground
 - ✓ Repository reconciliation / documentation audit
 
 **Next architectural work**
 
-- Perception and percepts
+- Percept attributes and structural relationships
 
 **Future work**
 
