@@ -17,6 +17,10 @@ current tree, see [MILESTONES.md](MILESTONES.md).
 
 ### Documentation
 
+- Add all-rights-reserved licensing, repository notice, privacy statement, and
+  security-policy documentation; clarify that this source-available repository
+  is not open source and that reuse requires written permission.
+
 - Record that the reconciliation audit is merged and that the repository is
   ready for the perception stage.
 - Reconcile the README, architecture overview, concept specification, and

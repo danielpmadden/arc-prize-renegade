@@ -187,6 +187,10 @@ implemented.
 | [CONCEPTS.md](CONCEPTS.md) | Specification | Intended concept model beyond the current immutable `Concept` value and category. |
 | [MILESTONES.md](MILESTONES.md) | Verified-history record | Append-only milestone history and its current-tree audit correction; not a roadmap or current implementation reference by itself. |
 | [CHANGELOG.md](CHANGELOG.md) | Change record | Concise release-facing changes; it does not duplicate milestone evidence. |
+| [LICENSE](LICENSE) | Legal notice | All-rights-reserved terms and permission requirements. |
+| [NOTICE.md](NOTICE.md) | Repository notice | Why the repository is public and how contributions are reviewed. |
+| [PRIVACY.md](PRIVACY.md) | Privacy statement | Repository data-collection and telemetry position. |
+| [SECURITY.md](SECURITY.md) | Security policy | Responsible vulnerability reporting guidance and scope. |
 
 `docs/architecture/overview.md` describes current implementation boundaries;
 the engineering journals record the Pass 4 and Pass 5 design choices.
@@ -219,6 +223,12 @@ The following are intentionally absent from this checkout:
 
 The in-memory `Memory` class is an execution record and manually populated
 capability registry. It is not persistent memory or learning.
+
+## Repository Status and Licensing
+
+Renegade is source-available and **not open source**. Copyright remains with
+Daniel Madden. Reuse requires explicit written permission from the copyright
+holder. See [LICENSE](LICENSE) for details.
 
 ## Recommended reading order
 
