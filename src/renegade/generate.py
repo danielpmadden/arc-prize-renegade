@@ -16,9 +16,10 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--output", type=Path)
     parser.add_argument("--json", action="store_true")
     parser.add_argument("--force", action="store_true", help="allow writing into an existing output directory")
+    parser.add_argument("--sampling", choices=("natural", "balanced"), default="balanced")
     args = parser.parse_args(argv)
     try:
-        generated = generate_batch(args.seed, args.count, difficulty=args.difficulty)
+        generated = generate_batch(args.seed, args.count, difficulty=args.difficulty, sampling=args.sampling)
     except (TypeError, ValueError) as error:
         parser.error(str(error))
     if args.output:
