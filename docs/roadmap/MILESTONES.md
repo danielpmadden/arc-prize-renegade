@@ -514,3 +514,10 @@ inspect each grid independently through the existing structural pipeline.
 Ordered task events and count-only diagnostics preserve provenance and order.
 This does not compare grids, discover transformations, introduce hypotheses,
 reason, or solve ARC.
+
+## Experimental implementation addendum — Passes 12–17 solver vertical slice
+
+The current tree contains an experimental bounded deterministic ARC solver
+vertical slice. It is not a retroactive claim about prior passes or official
+promotion. Its exact training validation, test-output construction, CLI, and
+local-only benchmark behavior are documented by the current source and tests.

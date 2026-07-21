@@ -64,3 +64,7 @@ __all__ = [
     "GridRole", "Task", "TaskGrid", "TaskKind", "TrainingPair", "inspect_task", "load_task",
     "TaskDiagnostics", "TaskGridDiagnostics", "TrainingPairDiagnostics", "summarize_task", "summarize_task_grid", "summarize_training_pair",
 ]
+from .solver import ChangeKind, ChangeSummary, Correspondence, Operation, Program, SolverResult, Validation, apply, correspondence, execute, solve_task
+__all__ += ["ChangeKind", "ChangeSummary", "Correspondence", "Operation", "Program", "SolverResult", "Validation", "apply", "correspondence", "execute", "solve_task"]
+from .generator import GeneratedTask, generate_batch, generate_task, validate_generated
+__all__ += ["GeneratedTask", "generate_batch", "generate_task", "validate_generated"]

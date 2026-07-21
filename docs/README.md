@@ -29,3 +29,14 @@ specification, historical records, and research journals.
 The numbered files in [`research/`](research/) preserve implementation-pass
 rationale and historical context. Use the architecture overview, source, and
 tests—not a journal alone—to state current behavior.
+
+## Experimental solver
+
+`renegade.solver` is a bounded executable solver layer above task inspection.
+See `python -m renegade.solve --help` and the initial solver baseline report.
+
+## Synthetic generator
+
+`renegade.generator` produces deterministic program-first synthetic tasks from
+the solver's executable operations. `python -m renegade.generate --help`
+documents its local export interface.
