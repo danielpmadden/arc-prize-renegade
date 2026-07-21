@@ -99,3 +99,27 @@ whole-grid programs, and accepts a program only after exact execution against
 every training output. It applies only exact survivors to test inputs; expected
 test outputs are evaluated only by the benchmark after prediction. This layer
 is experimental and does not alter the structural pipeline or its records.
+
+## Experimental object-centric constructive layer
+
+The solver also has an executable, bounded scene-program layer. `Scene` is an
+immutable interpretation of a grid using explicitly chosen four- or
+ eight-connected same-colour components. It records canonical component cells,
+bounds, masks, border contact, and a relation graph (direction, alignment,
+touching, equality of shape/size/colour). `ObjectPredicate` returns ordered
+object sets rather than silently breaking ties; `ObjectSelector` remains the
+explicit unique-object adapter.
+
+Executable object operations are `render_objects` (on the input canvas or a
+rebased bounding canvas), `render_related`, `recolor_objects`, and
+`repeat_object`. The latter has a bounded `object_count` symbolic value and
+bounded count limit. Rendering has deterministic overwrite ordering and no
+clipping: all constructed coordinates are derived from a rebased selected
+object set. Relation-driven rendering requires an unambiguous reference.
+
+Object candidates share `Program`, exact pair validation, replay, test-label
+privacy, canonical serialization, semantic prefix-state deduplication, and the
+existing candidate/depth bounds. Predicates, relations, canvas modes, colours,
+and repeat geometry are finite vocabularies. Empty/ambiguous unique selections
+and unsupported values fail explicitly. This is an experimental solver layer,
+not a claim that the structural pipeline itself performs semantic reasoning.

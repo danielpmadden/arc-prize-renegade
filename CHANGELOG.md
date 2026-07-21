@@ -97,3 +97,12 @@ current tree, see [MILESTONES](docs/roadmap/MILESTONES.md).
 - Added cardinality-correct benchmark scoring, structured search telemetry,
   bounded benchmark controls, atomic report writing, and benchmark comparison.
 - Enabled non-background crop as a bounded compositional prefix.
+
+## Unreleased — object-centric constructive layer
+
+### Added
+- Add immutable object-set predicates, four/eight-connected scene
+  interpretations, executable relation queries, constructive set rendering,
+  selected-object recolouring, and bounded count-driven repetition to the
+  experimental solver.
+- Add focused scene-program tests and an experimental implementation report.
