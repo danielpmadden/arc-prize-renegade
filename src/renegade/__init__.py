@@ -23,6 +23,7 @@ from .percepts import Percept, PerceptKind, PerceptRegistry, PerceptSet, form_co
 from .pipeline import PerceptPipelineResult, inspect_grid
 from .relationships import PerceptGraph, RelationshipDirection, RelationshipKind, RelationshipRegistry, RelationshipSet, StructuralRelationship, derive_alignment_relationships, derive_exact_comparison_relationships, derive_frame_relationships, derive_relationships, derive_spatial_relationships, derive_topological_relationships
 from .invariants import Invariant, InvariantKind, InvariantRegistry, InvariantSet, derive_invariants, derive_same_bounds_groups, derive_same_cell_count_groups, derive_same_shape_groups, derive_same_value_groups, derive_translation_families
+from .archetypes import Archetype, ArchetypeKind, ArchetypeRegistry, ArchetypeSet, derive_archetypes
 
 __all__ = [
     "Capability",

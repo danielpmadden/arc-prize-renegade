@@ -15,6 +15,7 @@ from .measurements import Measurement, MeasurementRegistry, MeasurementSet
 from .percepts import Percept, PerceptRegistry, PerceptSet
 from .relationships import PerceptGraph, RelationshipRegistry
 from .invariants import InvariantRegistry
+from .archetypes import ArchetypeRegistry
 
 
 Details: TypeAlias = tuple[tuple[str, Any], ...]
@@ -42,6 +43,8 @@ class EventKind(str, Enum):
     GRAPH_ASSEMBLED = "graph.assembled"
     INVARIANT_CREATED = "invariant.created"
     INVARIANT_RECORDED = "invariant.recorded"
+    ARCHETYPE_CREATED = "archetype.created"
+    ARCHETYPE_RECORDED = "archetype.recorded"
 
 
 class Outcome(str, Enum):
@@ -146,6 +149,7 @@ class Workspace:
     relationships: RelationshipRegistry = field(default_factory=RelationshipRegistry)
     percept_graph: PerceptGraph | None = None
     invariants: InvariantRegistry = field(default_factory=InvariantRegistry)
+    archetypes: ArchetypeRegistry = field(default_factory=ArchetypeRegistry)
     result: Any | None = None
     outcome: Outcome = Outcome.PENDING
     failure_reason: str | None = None

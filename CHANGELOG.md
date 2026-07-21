@@ -63,3 +63,9 @@ current tree, see [MILESTONES.md](MILESTONES.md).
 
 ## Unreleased — Pass 8
 - Added deterministic structural invariant records, grouping capabilities, registry, pipeline tracing, and playground inspection.
+
+## Unreleased
+
+### Added
+- Deterministic structural archetype values, sets, registry, and exact motif derivation from invariants.
+- Archetype pipeline integration, execution events, playground reporting, tests, and research documentation.

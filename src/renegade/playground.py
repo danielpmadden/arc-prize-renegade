@@ -28,8 +28,11 @@ def render(result) -> str:
     section("INVARIANTS")
     for item in result.invariants:
         lines.append(f"{item.kind.name}: " + ", ".join(member.local_name for member in item.member_percepts) + (f" vector={dict(item.derivation)}" if item.derivation else ""))
+    section("ARCHETYPES")
+    for item in result.archetypes:
+        lines.append(f"{item.kind.name}: " + ", ".join(reference.local_name for reference in item.invariant_references))
     section("EXECUTION TRACE"); lines.extend(f"{item.sequence}. [{item.kind.value}] {item.message}" for item in result.trace)
-    section("SUMMARY"); lines.extend((f"observations: {len(result.observations)}", f"measurements: {len(result.measurements)}", f"percepts: {1 + len(result.region_percepts)}", f"regions: {len(result.region_percepts)}", f"relationships: {len(result.relationships)}", f"invariants: {len(result.invariants)}"))
+    section("SUMMARY"); lines.extend((f"observations: {len(result.observations)}", f"measurements: {len(result.measurements)}", f"percepts: {1 + len(result.region_percepts)}", f"regions: {len(result.region_percepts)}", f"relationships: {len(result.relationships)}", f"invariants: {len(result.invariants)}", f"archetypes: {len(result.archetypes)}"))
     for kind in __import__('collections').Counter(item.kind.name for item in result.relationships).items(): lines.append(f"{kind[0]}: {kind[1]}")
     return "\n".join(lines)
 def main(argv=None) -> int:
