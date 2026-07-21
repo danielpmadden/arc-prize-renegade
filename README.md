@@ -147,6 +147,19 @@ frame references, graph/result agreement, and diagnostics non-mutation. See
 the [capability baseline](docs/reports/pass-10-capability-baseline.md) for
 observed limits and non-promotional findings.
 
+## Synthetic Symbolic Tasks
+
+`python -m renegade.generate` creates deterministic, procedurally generated
+grid tasks without reading or embedding ARC datasets.  It samples bounded
+compositions from the solver's executable operations, constructs input worlds,
+and derives every training and hidden test output by replaying that program.
+Use `--seed`, `--difficulty`, `--count`, and `--output synthetic_tasks/` for
+reproducible exports.  The JSON metadata records the seed, operation sequence,
+depth, and bounded generation attempt; it is provenance for research and is
+not solver input.  Current difficulty levels increase program depth through
+level 3 and scene complexity thereafter; they do not claim object-selection or
+branching operations that the shared solver language does not implement.
+
 ## Deterministic ARC Solver Vertical Slice
 
 This checkout now includes an experimental, bounded end-to-end ARC solver. It
