@@ -2,6 +2,7 @@
 from __future__ import annotations
 import argparse, json, sys
 from .pipeline import inspect_grid
+from .tasks import inspect_task, load_task
 
 DEFAULT_GRID = ((1, 1, 0), (1, 0, 0), (2, 2, 2))
 def _load(args: argparse.Namespace):
@@ -35,9 +36,22 @@ def render(result) -> str:
     section("SUMMARY"); lines.extend((f"observations: {len(result.observations)}", f"measurements: {len(result.measurements)}", f"percepts: {1 + len(result.region_percepts)}", f"regions: {len(result.region_percepts)}", f"relationships: {len(result.relationships)}", f"invariants: {len(result.invariants)}", f"archetypes: {len(result.archetypes)}"))
     for kind in __import__('collections').Counter(item.kind.name for item in result.relationships).items(): lines.append(f"{kind[0]}: {kind[1]}")
     return "\n".join(lines)
+def render_task(task) -> str:
+    lines = ["TASK", "─" * 28, f"identifier: {task.identifier}"]
+    def grid(title, grid):
+        lines.extend((title, "─" * 28, render(grid.pipeline_result)))
+    for number, pair in enumerate(task.training_pairs, 1):
+        lines.extend((f"TRAINING PAIR {number}", "─" * 28)); grid("INPUT", pair.input_grid); grid("OUTPUT", pair.output_grid)
+    for number, value in enumerate(task.test_inputs, 1): grid(f"TEST INPUT {number}", value)
+    for number, value in enumerate(task.expected_outputs, 1):
+        if value is not None: grid(f"EXPECTED OUTPUT {number}", value)
+    lines.extend(("TASK EXECUTION TRACE", "─" * 28)); lines.extend(f"{item.sequence}. [{item.kind.value}] {item.message}" for item in task.trace)
+    return "\n".join(lines)
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Inspect a deterministic supplied grid."); group = parser.add_argument_group("input")
-    group.add_argument("--grid"); group.add_argument("--file"); group.add_argument("--stdin", action="store_true")
-    try: print(render(inspect_grid(_load(parser.parse_args(argv))))); return 0
+    group.add_argument("--grid"); group.add_argument("--file"); group.add_argument("--stdin", action="store_true"); group.add_argument("--task", action="store_true")
+    try:
+        args = parser.parse_args(argv); value = _load(args)
+        print(render_task(inspect_task(load_task(value, "playground", "playground input"))) if args.task else render(inspect_grid(value))); return 0
     except (OSError, ValueError, TypeError, json.JSONDecodeError) as error: print(f"error: {error}", file=sys.stderr); return 2
 if __name__ == "__main__": raise SystemExit(main())

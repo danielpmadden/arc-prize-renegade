@@ -501,3 +501,16 @@ does not add concept association, interpretation, reasoning, learning, or ARC
 solving. The accompanying baseline report records observed recognitions,
 rejections, and performance limits without promoting this branch to official
 status.
+
+---
+
+# Pass 11 — Deterministic ARC task representation
+
+Status: Implementation pass — pending human review.
+
+This append-only entry records branch evidence only. Immutable task,
+training-pair, and role-labelled grid records parse canonical ARC JSON and
+inspect each grid independently through the existing structural pipeline.
+Ordered task events and count-only diagnostics preserve provenance and order.
+This does not compare grids, discover transformations, introduce hypotheses,
+reason, or solve ARC.

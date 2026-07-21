@@ -14,3 +14,8 @@ class PlaygroundTests(unittest.TestCase):
   error=io.StringIO()
   with redirect_stderr(error): self.assertEqual(main(["--grid", "bad"]), 2)
   self.assertIn("error:", error.getvalue())
+ def test_task(self):
+  task = '{"train":[{"input":[[1]],"output":[[2]]}],"test":[{"input":[[3]]}]}'
+  output=io.StringIO()
+  with redirect_stdout(output): self.assertEqual(main(["--task", "--grid", task]), 0)
+  self.assertIn("TRAINING PAIR 1", output.getvalue())

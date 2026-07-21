@@ -25,6 +25,8 @@ from .relationships import PerceptGraph, RelationshipDirection, RelationshipKind
 from .invariants import Invariant, InvariantKind, InvariantRegistry, InvariantSet, derive_invariants, derive_same_bounds_groups, derive_same_cell_count_groups, derive_same_shape_groups, derive_same_value_groups, derive_translation_families
 from .archetypes import Archetype, ArchetypeKind, ArchetypeRegistry, ArchetypeSet, derive_archetypes
 from .diagnostics import PipelineDiagnostics, summarize_pipeline
+from .tasks import GridRole, Task, TaskGrid, TaskKind, TrainingPair, inspect_task, load_task
+from .diagnostics import TaskDiagnostics, TaskGridDiagnostics, TrainingPairDiagnostics, summarize_task, summarize_task_grid, summarize_training_pair
 
 __all__ = [
     "Capability",
@@ -59,4 +61,6 @@ __all__ = [
     "Invariant", "InvariantKind", "InvariantRegistry", "InvariantSet", "derive_invariants", "derive_same_value_groups", "derive_same_shape_groups", "derive_same_cell_count_groups", "derive_same_bounds_groups", "derive_translation_families",
     "Archetype", "ArchetypeKind", "ArchetypeRegistry", "ArchetypeSet", "derive_archetypes",
     "PipelineDiagnostics", "summarize_pipeline",
+    "GridRole", "Task", "TaskGrid", "TaskKind", "TrainingPair", "inspect_task", "load_task",
+    "TaskDiagnostics", "TaskGridDiagnostics", "TrainingPairDiagnostics", "summarize_task", "summarize_task_grid", "summarize_training_pair",
 ]

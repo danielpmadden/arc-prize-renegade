@@ -25,6 +25,13 @@ archetype layer recognizes a small vocabulary of exact motifs only from
 invariant metadata and provenance. None of these layers assigns semantic
 meaning, recognizes objects, infers intent, or solves ARC tasks.
 
+`Task`, `TrainingPair`, and `TaskGrid` add an immutable task container above
+the grid pipeline. `load_task` parses canonical ARC JSON and `inspect_task`
+inspects each training input, training output, test input, and optional
+expected output independently in deterministic order. Task events record
+creation, grid start/completion, and completion only; no cross-grid comparison
+or cognition is derived.
+
 ## Architectural guarantees
 
 - Public records are immutable and compare by stable identity where their
@@ -45,6 +52,7 @@ meaning, recognizes objects, infers intent, or solves ARC tasks.
 - `relationships.py`, `invariants.py`, `archetypes.py` — exact structural
   derivation layers.
 - `pipeline.py` — grid orchestration and result value.
+- `tasks.py` — ARC task parsing, immutable task values, and independent grid inspection.
 - `diagnostics.py` — count-only result summary.
 - `playground.py` — command-line rendering for inspection.
 - `core.py` — general one-capability execution foundation and workspace.

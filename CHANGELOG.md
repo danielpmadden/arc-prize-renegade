@@ -12,6 +12,9 @@ current tree, see [MILESTONES](docs/roadmap/MILESTONES.md).
 
 ### Added
 
+- Add deterministic immutable ARC task, training-pair, and task-grid values;
+  canonical parsing; independent inspection; events; diagnostics; and
+  playground task rendering. No cross-grid analysis or ARC solving is added.
 - Add immutable percepts, exact percept registration, explicit whole-frame and
   four-directional same-value region formation, and a deterministic playground.
 
