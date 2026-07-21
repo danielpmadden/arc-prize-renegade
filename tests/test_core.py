@@ -57,6 +57,7 @@ class RenegadeCoreTests(unittest.TestCase):
             "PipelineDiagnostics", "summarize_pipeline",
             "GridRole", "Task", "TaskGrid", "TaskKind", "TrainingPair", "inspect_task", "load_task",
             "TaskDiagnostics", "TaskGridDiagnostics", "TrainingPairDiagnostics", "summarize_task", "summarize_task_grid", "summarize_training_pair",
+            "ChangeKind", "ChangeSummary", "Correspondence", "Operation", "Program", "SolverResult", "Validation", "apply", "correspondence", "execute", "solve_task",
         }
         self.assertEqual(set(renegade.__all__), expected)
         self.assertTrue(all(hasattr(renegade, name) for name in renegade.__all__))

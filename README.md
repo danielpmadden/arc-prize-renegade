@@ -146,3 +146,23 @@ repeatability, event ordering, registry-equivalent uniqueness, provenance and
 frame references, graph/result agreement, and diagnostics non-mutation. See
 the [capability baseline](docs/reports/pass-10-capability-baseline.md) for
 observed limits and non-promotional findings.
+
+## Deterministic ARC Solver Vertical Slice
+
+This checkout now includes an experimental, bounded end-to-end ARC solver. It
+uses the structural inspection pipeline for task grids, derives deterministic
+cross-grid region correspondences and change summaries, then validates compact
+whole-grid symbolic programs exactly on every training pair. It never uses test
+outputs to infer a program.
+
+```bash
+python -m renegade.solve path/to/task.json --show-rejections
+python -m renegade.solve path/to/task.json --json
+python -m renegade.benchmark path/to/local/tasks --json
+```
+
+Implemented program operations are identity, global recoloring, rotation,
+reflection, non-background crop, bounded translation, enclosed-region fill,
+and outline. Short deterministic compositions are enumerated at depth two.
+A prediction is not called test-correct unless a separately available expected
+test output is compared after solving.
