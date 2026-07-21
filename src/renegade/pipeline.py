@@ -7,6 +7,8 @@ from .foundation import StableIdentifier
 from .measurements import measure_bounds, measure_dimensions, measure_observation_count
 from .observations import Observation, ObservationFrame, ObservationKind, _normalize_value
 from .percepts import Percept, form_connected_regions, form_frame_percept
+from .relationships import PerceptGraph, RelationshipKind, StructuralRelationship, derive_relationships
+from .invariants import Invariant, derive_invariants
 
 def normalize_grid(value: Any) -> tuple[tuple[Any, ...], ...]:
     if not isinstance(value, (list, tuple)) or not value: raise ValueError("grid must be a non-empty array of rows")
@@ -23,6 +25,9 @@ class PerceptPipelineResult:
     measurements: tuple[Any, ...]
     frame_percept: Percept
     region_percepts: tuple[Percept, ...]
+    relationships: tuple[StructuralRelationship, ...]
+    percept_graph: PerceptGraph
+    invariants: tuple[Invariant, ...]
     trace: tuple[Any, ...]
 
 def inspect_grid(value: Any, name: str = "grid") -> PerceptPipelineResult:
@@ -52,4 +57,21 @@ def inspect_grid(value: Any, name: str = "grid") -> PerceptPipelineResult:
             workspace.percepts.register(percept); workspace.record(EventKind.PERCEPT_RECORDED, f"Recorded percept {percept.identity}.", percept_identity=str(percept.identity))
         workspace.record(EventKind.EXECUTION_SUCCEEDED, f"Capability {capability.__name__} completed.", capability_name=capability.__name__)
     all_percepts = workspace.percepts.all()
-    return PerceptPipelineResult(grid, frame, workspace.observations.all(), workspace.measurements.all(), all_percepts[0], all_percepts[1:], tuple(workspace.trace))
+    workspace.record(EventKind.CAPABILITY_RETRIEVED, "Requested relationship capabilities.", capability_name="derive_relationships")
+    workspace.record(EventKind.CAPABILITY_STARTED, "Started relationship derivation.", capability_name="derive_relationships")
+    derived = derive_relationships(all_percepts, {item.identity: item for item in observations}, frame.identity)
+    for relationship in derived:
+        workspace.record(EventKind.RELATIONSHIP_CREATED, f"Created relationship {relationship.identity}.", relationship_identity=str(relationship.identity), relationship_kind=relationship.kind.value)
+        workspace.relationships.register(relationship)
+        workspace.record(EventKind.RELATIONSHIP_RECORDED, f"Recorded relationship {relationship.identity}.", relationship_identity=str(relationship.identity))
+    workspace.percept_graph = PerceptGraph.from_registries(workspace.percepts, workspace.relationships)
+    workspace.record(EventKind.GRAPH_ASSEMBLED, "Assembled percept graph.", percept_count=len(all_percepts), relationship_count=len(derived))
+    workspace.record(EventKind.EXECUTION_SUCCEEDED, "Relationship derivation completed.", capability_name="derive_relationships")
+    workspace.record(EventKind.CAPABILITY_RETRIEVED, "Requested invariant capabilities.", capability_name="derive_invariants")
+    workspace.record(EventKind.CAPABILITY_STARTED, "Started invariant derivation.", capability_name="derive_invariants")
+    for invariant in derive_invariants(workspace.relationships.all(), frame.identity):
+        workspace.record(EventKind.INVARIANT_CREATED, f"Created invariant {invariant.identity}.", invariant_identity=str(invariant.identity), invariant_kind=invariant.kind.value)
+        workspace.invariants.register(invariant)
+        workspace.record(EventKind.INVARIANT_RECORDED, f"Recorded invariant {invariant.identity}.", invariant_identity=str(invariant.identity))
+    workspace.record(EventKind.EXECUTION_SUCCEEDED, "Invariant derivation completed.", capability_name="derive_invariants")
+    return PerceptPipelineResult(grid, frame, workspace.observations.all(), workspace.measurements.all(), all_percepts[0], all_percepts[1:], workspace.relationships.all(), workspace.percept_graph, workspace.invariants.all(), tuple(workspace.trace))

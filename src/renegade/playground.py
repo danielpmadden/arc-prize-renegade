@@ -20,8 +20,17 @@ def render(result) -> str:
     section("MEASUREMENTS"); lines.extend(f"{item.identity.local_name}: {item.value}" for item in result.measurements)
     section("PERCEPTS"); lines.append(f"frame percept: {result.frame_percept.identity}")
     for number, percept in enumerate(result.region_percepts, 1): lines.append(f"region {number}: {percept.identity} cells: {len(percept.observation_references)}")
+    section("RELATIONSHIPS")
+    lines.extend(f"{item.source.local_name} {item.kind.name} {item.target.local_name}" + (f" delta={dict(item.derivation)}" if item.derivation else "") for item in result.relationships)
+    section("PERCEPT GRAPH")
+    for percept in result.percept_graph.percepts:
+        lines.append(f"{percept.identity.local_name}: outgoing={len(result.percept_graph.outgoing(percept.identity))} incoming={len(result.percept_graph.incoming(percept.identity))}")
+    section("INVARIANTS")
+    for item in result.invariants:
+        lines.append(f"{item.kind.name}: " + ", ".join(member.local_name for member in item.member_percepts) + (f" vector={dict(item.derivation)}" if item.derivation else ""))
     section("EXECUTION TRACE"); lines.extend(f"{item.sequence}. [{item.kind.value}] {item.message}" for item in result.trace)
-    section("SUMMARY"); lines.extend((f"observations: {len(result.observations)}", f"measurements: {len(result.measurements)}", f"percepts: {1 + len(result.region_percepts)}", f"regions: {len(result.region_percepts)}"))
+    section("SUMMARY"); lines.extend((f"observations: {len(result.observations)}", f"measurements: {len(result.measurements)}", f"percepts: {1 + len(result.region_percepts)}", f"regions: {len(result.region_percepts)}", f"relationships: {len(result.relationships)}", f"invariants: {len(result.invariants)}"))
+    for kind in __import__('collections').Counter(item.kind.name for item in result.relationships).items(): lines.append(f"{kind[0]}: {kind[1]}")
     return "\n".join(lines)
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Inspect a deterministic supplied grid."); group = parser.add_argument_group("input")
