@@ -1,46 +1,54 @@
 # Architecture Overview
 
-> **Document role: implementation overview.** It describes the current source tree.
+> **Document role: current implementation overview.** This is the canonical
+> explanation of the structural pipeline in this checkout. It does not promote
+> branch work to official status or describe future semantic capabilities.
+
+## Pipeline and boundary
 
 ```
-Supplied input → observations → measurements → explicit percept formation
-→ percepts → workspace and execution trace
+supplied rectangular grid
+  → observations → measurements → percepts → relationships
+  → invariants → archetypes → workspace, graph, and ordered trace
 ```
 
-An `Observation` records supplied material. A `Measurement` reports a
-reproducible property. A `Percept` is an immutable, identity-based organization
-of ordered observation references, optional measurement references, evidence,
-a producing capability, and optional parent frame. A `Concept` remains an
-explicit abstraction value only; interpretation is not implemented.
+`inspect_grid` is the explicit orchestration entry point. It normalizes a
+non-empty rectangular grid, records one coordinate/value observation per cell,
+and forms an observation frame. It then produces dimensions, bounds, and count
+measurements; a whole-frame percept; and four-directionally connected,
+same-value region percepts in deterministic discovery order.
 
-`form_frame_percept` records the supplied frame as one structural unit.
-`form_connected_regions` records maximal same-value regions from a rectangular
-coordinate-cell frame. It scans coordinates row-major, starts at the first
-unassigned coordinate, traverses neighbors in up/right/down/left order, and
-emits discovery order. Connectivity is orthogonal only. A region is structural,
-not a recognized object. `Workspace` keeps exact, insertion-ordered percept,
-observation, and measurement registries separately and records percept creation
-and registration events. Semantic association, interpretation, reasoning,
-learning, and ARC solving remain absent.
+The relationship layer performs bounded, exact pairwise analysis over percepts
+and records geometric facts only. The graph is a read-only index over those
+records. The invariant layer groups connected exact relationship facts. The
+archetype layer recognizes a small vocabulary of exact motifs only from
+invariant metadata and provenance. None of these layers assigns semantic
+meaning, recognizes objects, infers intent, or solves ARC tasks.
 
-## Structural relationships (Pass 7)
-The implemented pipeline is supplied grid → observations → measurements → percepts → explicit relationship derivation → structural relationships → percept graph → workspace trace. `StructuralRelationship` records an identity, typed kind, endpoints, capability, frame context, supporting references, evidence, and only necessary normalized metadata. Equality is identity-only. Symmetric facts use ascending stable endpoint order; directed facts retain source/target order and the pipeline emits both strict inverse facts (`LEFT_OF`/`RIGHT_OF`, `ABOVE`/`BELOW`).
+## Architectural guarantees
 
-Pairwise region analysis is deterministic registration order and bounded to 64 percepts (O(n²)); the graph only indexes registered records and has no inference, traversal, or closure. Exact predicates include orthogonal/diagonal contact, strict bounds directions, row/column span and occupancy alignment, uniform supplied value, count, bounds size, translation-normalized coordinates, translation vector, frame boundary contact, coordinate subset, and bounds-within. These are structural facts, not semantic relationships.
+- Public records are immutable and compare by stable identity where their
+  value types specify identity semantics.
+- Registries preserve insertion order and reject duplicate identities and
+  duplicate canonical records.
+- Structural records retain frame context and supporting provenance.
+- Relationship derivation is capped at 64 percepts to keep pairwise work
+  bounded.
+- Workspace events are attempt-local and sequential. Diagnostics summarize an
+  existing result and derive no new facts.
 
-## Structural invariants (Pass 8)
-Invariants are a separate layer after relationships: they consume only registered structural relationships and deterministically compress connected endpoint groups. `SameValueGroup`, `SameShapeGroup`, `SameCellCountGroup`, and `SameBoundsGroup` select their corresponding exact relationship kind. `TranslationFamily` additionally preserves one exact translation vector. They preserve relationship identities and frame context, but do not inspect observations, attach concepts, or claim semantic meaning.
+## Package map
 
-## Structural archetypes (Pass 9)
-Archetypes follow invariants in the deterministic pipeline. `Archetype` is an
-immutable identity-based record with exact invariant references, a producing
-capability, frame context, evidence, and inspectable derivation metadata.
-`derive_archetypes` consumes only invariant records; it never receives or
-inspects observations, percepts, or relationships. `ArchetypeRegistry` remains
-a dedicated workspace registry. The `ARCHETYPES` playground section reports
-only deterministic structural summaries.
+- `foundation.py` — stable identifiers and evidence references.
+- `observations.py`, `measurements.py`, `percepts.py` — the first three
+  structural record layers and their registries.
+- `relationships.py`, `invariants.py`, `archetypes.py` — exact structural
+  derivation layers.
+- `pipeline.py` — grid orchestration and result value.
+- `diagnostics.py` — count-only result summary.
+- `playground.py` — command-line rendering for inspection.
+- `core.py` — general one-capability execution foundation and workspace.
 
-The architectural boundary is explicit: relationships are pairwise structural
-facts; invariants compress exact relationship regularities; archetypes recognize
-exact reusable forms from those invariants; **future** concept association may
-attach meaning. No such association or semantic interpretation is implemented.
+For an entry point and commands, see the [root README](../../README.md). For
+document roles and preserved pass journals, see the
+[documentation guide](../README.md).

@@ -1,4 +1,4 @@
-"""Public API for Renegade's deterministic foundation through measurement."""
+"""Intentional public API for Renegade's deterministic structural pipeline."""
 
 from .core import (
     Capability,
@@ -24,6 +24,7 @@ from .pipeline import PerceptPipelineResult, inspect_grid
 from .relationships import PerceptGraph, RelationshipDirection, RelationshipKind, RelationshipRegistry, RelationshipSet, StructuralRelationship, derive_alignment_relationships, derive_exact_comparison_relationships, derive_frame_relationships, derive_relationships, derive_spatial_relationships, derive_topological_relationships
 from .invariants import Invariant, InvariantKind, InvariantRegistry, InvariantSet, derive_invariants, derive_same_bounds_groups, derive_same_cell_count_groups, derive_same_shape_groups, derive_same_value_groups, derive_translation_families
 from .archetypes import Archetype, ArchetypeKind, ArchetypeRegistry, ArchetypeSet, derive_archetypes
+from .diagnostics import PipelineDiagnostics, summarize_pipeline
 
 __all__ = [
     "Capability",
@@ -56,4 +57,6 @@ __all__ = [
     "PerceptGraph", "RelationshipDirection", "RelationshipKind", "RelationshipRegistry", "RelationshipSet", "StructuralRelationship", "derive_relationships",
     "derive_topological_relationships", "derive_spatial_relationships", "derive_alignment_relationships", "derive_exact_comparison_relationships", "derive_frame_relationships",
     "Invariant", "InvariantKind", "InvariantRegistry", "InvariantSet", "derive_invariants", "derive_same_value_groups", "derive_same_shape_groups", "derive_same_cell_count_groups", "derive_same_bounds_groups", "derive_translation_families",
+    "Archetype", "ArchetypeKind", "ArchetypeRegistry", "ArchetypeSet", "derive_archetypes",
+    "PipelineDiagnostics", "summarize_pipeline",
 ]
