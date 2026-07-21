@@ -4,9 +4,9 @@
 > governing documents. It is not an implementation specification, historical
 > evidence, or a claim that a described capability exists.
 
-Before changing the repository, read `README.md`, `EPISTEMOLOGY.md`,
-`CONSTITUTION.md`, `CAPABILITY_CONTRACT.md`, `CONCEPTS.md`, `LIFECYCLE.md`,
-`LINEAGE.md`, `EMERGENCE.md`, and `MILESTONES.md`.
+Before changing the repository, read `README.md`, `docs/foundations/EPISTEMOLOGY.md`,
+`docs/governance/CONSTITUTION.md`, `docs/foundations/CAPABILITY_CONTRACT.md`, `docs/foundations/CONCEPTS.md`, `docs/foundations/LIFECYCLE.md`,
+`docs/foundations/LINEAGE.md`, `docs/foundations/EMERGENCE.md`, and `docs/roadmap/MILESTONES.md`.
 
 - Distinguish current implementation, specification, verified history,
   experimental branch work, and speculation. Do not treat prompt assertions or

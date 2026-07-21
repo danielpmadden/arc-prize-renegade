@@ -6,7 +6,7 @@
 This file is a concise, release-facing record of changes. It does **not**
 establish architectural verification and does not duplicate milestone evidence.
 For verified architectural history, including the audit of claims against the
-current tree, see [MILESTONES.md](MILESTONES.md).
+current tree, see [MILESTONES](docs/roadmap/MILESTONES.md).
 
 ## Unreleased
 
@@ -29,7 +29,7 @@ current tree, see [MILESTONES.md](MILESTONES.md).
 - Add an architectural roadmap that separates implemented layers, current
   reconciliation work, and future perception-oriented work.
 
-- Add `EPISTEMOLOGY.md`, a practical status vocabulary for official,
+- Add `docs/foundations/EPISTEMOLOGY.md`, a practical status vocabulary for official,
   experimental, specification, historical, speculative, and evidence claims.
 - Add a pull-request template that asks contributors to state change status,
   verification, milestone impact, deferred work, and required human judgment.
@@ -69,3 +69,15 @@ current tree, see [MILESTONES.md](MILESTONES.md).
 ### Added
 - Deterministic structural archetype values, sets, registry, and exact motif derivation from invariants.
 - Archetype pipeline integration, execution events, playground reporting, tests, and research documentation.
+
+## Unreleased — Pass 10
+
+### Added
+- Characterization utility, 19-case expectation-bearing golden corpus,
+  normalized representative snapshots, exhaustive 107 tiny-grid cases, and
+  boundary/integrity checks for the implemented structural pipeline.
+- Capability-baseline report and Pass 10 research journal.
+
+### Changed
+- Organize governing, legal, roadmap, security, and research documentation
+  under `docs/` and `.github/` while preserving tracked file history.

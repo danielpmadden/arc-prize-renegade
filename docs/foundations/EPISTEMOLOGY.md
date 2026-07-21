@@ -32,6 +32,6 @@ Use these terms precisely:
   examining.
 
 For current implementation, inspect tracked source and tests. For historical
-claims, consult `MILESTONES.md`. For intended architecture, consult the
+claims, consult `docs/roadmap/MILESTONES.md`. For intended architecture, consult the
 specifications. When these sources disagree, record the discrepancy rather
 than silently resolving it by assumption.

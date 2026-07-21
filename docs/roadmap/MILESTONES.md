@@ -277,7 +277,7 @@ currently tracked implementation and tests.
   history, capability eligibility, deterministic capability identity, or
   execution restrictions. The current test suite has no dedicated tests for
   these foundation primitives.
-- Milestone 0.3 is not implemented in the current tree. `CONCEPTS.md` is a
+- Milestone 0.3 is not implemented in the current tree. `docs/foundations/CONCEPTS.md` is a
   specification, but there are no `Concept`, `ConceptRegistry`, or concept
   relationship implementation files or tests. Its claimed verification must
   not be treated as current executable behavior.
@@ -486,3 +486,18 @@ LinearChain, TranslationArray, and Checkerboard. Archetypes retain invariant
 provenance and frame context, are recorded separately in the workspace, and do
 not introduce concepts, semantic association, interpretation, hypotheses,
 reasoning, learning, prediction, or ARC solving.
+
+---
+
+# Pass 10 — Repository topology and capability characterization
+
+Status: Implementation pass — pending human review.
+
+This append-only entry records branch evidence only. It reorganizes current,
+governing, legal, roadmap, and research documentation; adds a deterministic
+characterization harness; and adds corpus, exhaustive tiny-grid, boundary, and
+integrity tests for the existing observation-through-archetype pipeline. It
+does not add concept association, interpretation, reasoning, learning, or ARC
+solving. The accompanying baseline report records observed recognitions,
+rejections, and performance limits without promoting this branch to official
+status.
