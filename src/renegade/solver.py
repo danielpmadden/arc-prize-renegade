@@ -268,8 +268,42 @@ def _infer_primitives(pairs: tuple[tuple[Grid, Grid], ...], *, include_object: b
     return tuple(Program((op,)) for op in candidates if _fits(op, pairs))
 
 
+def _infer_scene_render_primitives(pairs: tuple[tuple[Grid, Grid], ...]) -> tuple[Program, ...]:
+    """Fit the small scene-to-grid boundary used after an object prefix.
+
+    These operations terminate a scene composition.  Keeping this distinct
+    from the wider one-step object vocabulary prevents every intermediate
+    state from expanding into relation and repetition candidates.
+    """
+    backgrounds = {background(source) for source, _ in pairs}
+    if len(backgrounds) != 1:
+        return ()
+    bg = next(iter(backgrounds))
+    predicates = (
+        PredicateKind.ALL, PredicateKind.BORDER, PredicateKind.INTERIOR,
+        PredicateKind.LARGEST, PredicateKind.SMALLEST, PredicateKind.WIDEST,
+        PredicateKind.TALLEST,
+    )
+    candidates = [
+        Operation.make("extract_object", background=bg, selector=kind.value)
+        for kind in SelectorKind
+    ]
+    candidates.extend(
+        Operation.make("render_objects", background=bg, predicate=predicate.value, canvas=canvas)
+        for predicate in predicates for canvas in ("input", "bbox")
+    )
+    return tuple(Program((op,)) for op in candidates if _fits(op, pairs))
+
+
 def _prefix_operations(sources: tuple[Grid, ...], targets: tuple[Grid, ...], config: SearchConfig) -> tuple[Operation, ...]:
-    """Finite public prefix vocabulary; recolor targets use only observed palette."""
+    """Finite public prefix vocabulary; recolor targets use only observed palette.
+
+    Object rendering is included as a prefix because it is a lossless bridge
+    from the scene layer back to the grid-program language: a following
+    primitive can then operate on the selected scene.  The vocabulary remains
+    bounded to the same seven predicates already searched for one-step object
+    programs and two explicit canvas choices.
+    """
     palette = sorted({v for grid in sources + targets for row in grid for v in row}, key=repr)
     colors = sorted({v for grid in sources for row in grid for v in row}, key=repr)
     ops = [Operation.make("rotate", turns=x) for x in (1,2,3)] + [Operation.make("reflect", axis=x) for x in ("horizontal","vertical")]
@@ -282,12 +316,26 @@ def _prefix_operations(sources: tuple[Grid, ...], targets: tuple[Grid, ...], con
         # Crop is a general dimension-changing primitive.  It is included in
         # prefixes so later fitted operations can consume a smaller state.
         ops.append(Operation.make("crop", background=bg))
-        # Object operations are fitted as complete one-step hypotheses.  They
-        # are intentionally not prefix generators yet: every such prefix
-        # creates a fresh scene for every training pair and multiplied the
-        # depth-two state frontier without a compositional curriculum that
-        # justifies that cost.  This preserves their executable/searchable
-        # one-step behavior while keeping composition bounds architectural.
+        # Rendering a selected object set gives later grid primitives access to
+        # the existing scene/object layer.  It avoids adding a special-purpose
+        # filter-recolour-render operation while retaining explicit, finite
+        # predicate and canvas domains.
+        search_predicates = (
+            PredicateKind.ALL, PredicateKind.BORDER, PredicateKind.INTERIOR,
+            PredicateKind.LARGEST, PredicateKind.SMALLEST, PredicateKind.WIDEST,
+            PredicateKind.TALLEST,
+        )
+        for predicate in search_predicates:
+            for canvas in ("input", "bbox"):
+                ops.append(Operation.make(
+                    "render_objects", background=bg,
+                    predicate=predicate.value, canvas=canvas,
+                ))
+            for color in palette:
+                ops.append(Operation.make(
+                    "recolor_objects", background=bg,
+                    predicate=predicate.value, color=color,
+                ))
         ops += [Operation.make("translate", offset=(dr,dc), background=bg) for dr in range(-config.max_displacement,config.max_displacement+1) for dc in range(-config.max_displacement,config.max_displacement+1) if (dr,dc) != (0,0)]
     return tuple(ops)
 
@@ -338,9 +386,13 @@ def solve_task(task: Task, *, max_depth: int = 2, max_candidates: int = 512, con
         prefixes = dict(sorted(next_prefixes.items(), key=lambda item: item[1].canonical)[:config.max_prefix_states])
         telemetry["search_by_depth"][str(depth)]["unique_intermediate_states"] = len(prefixes)
         for state, prefix in prefixes.items():
-            # Object operations are deliberately excluded from fitted finals
-            # until an explicitly bounded object-composition grammar exists.
-            for final in _infer_primitives(tuple(zip(state, targets)), include_object=False):
+            final_pairs = tuple(zip(state, targets))
+            # A scene-aware prefix may terminate at the scene-to-grid boundary.
+            # The restricted terminal vocabulary is intentional: it exposes
+            # selection/recolour/render composition without multiplying every
+            # state by the wider relation and repetition one-step search.
+            finals = _infer_primitives(final_pairs, include_object=False) + _infer_scene_render_primitives(final_pairs)
+            for final in finals:
                 program = Program(prefix.operations + final.operations)
                 if program.depth != depth + 1: continue
                 telemetry["search_by_depth"][str(depth + 1)]["complete_programs_attempted"] += 1
