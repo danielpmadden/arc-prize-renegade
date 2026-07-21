@@ -19,6 +19,7 @@ dependencies = []
 renegade = "renegade.__main__:main"
 renegade-playground = "renegade.playground:main"
 renegade-characterize = "renegade.characterize:main"
+renegade-grammar = "renegade.grammar_cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}
