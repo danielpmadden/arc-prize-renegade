@@ -1,7 +1,7 @@
 import unittest
 
 from renegade.composition_curriculum import evaluate_curriculum
-from renegade.grammar import DEFAULT_REGISTRY, GrammarConfig, deserialize, evaluate, serialize, validate_registry
+from renegade.grammar import DEFAULT_REGISTRY, GrammarConfig, deserialize, evaluate, search, serialize, validate_registry
 
 
 class GrammarTests(unittest.TestCase):
@@ -28,3 +28,15 @@ class GrammarTests(unittest.TestCase):
         self.assertEqual(first["solved"], first["case_count"])
         self.assertTrue(all(not row["telemetry"]["truncated"] for row in first["cases"]))
 
+    def test_search_composes_existing_selection_operations(self):
+        # The globally smallest object is a border distractor.  The desired
+        # object can only be reached by composing interior then smallest.
+        training = (
+            (((1, 0, 0, 0, 0), (0, 2, 2, 0, 0), (0, 2, 0, 3, 0), (0, 0, 0, 0, 0)), ((3,),)),
+            (((4, 0, 0, 0, 0), (0, 5, 5, 0, 0), (0, 5, 0, 6, 0), (0, 0, 0, 0, 0)), ((6,),)),
+        )
+        result = search(training, (((7, 0, 0, 0, 0), (0, 8, 8, 0, 0), (0, 8, 0, 9, 0), (0, 0, 0, 0, 0)),))
+        self.assertIsNotNone(result.program)
+        self.assertEqual(result.predictions, (((9,),),))
+        self.assertIn("predicate='interior'", result.program.canonical)
+        self.assertIn("predicate='smallest'", result.program.canonical)
