@@ -1,11 +1,13 @@
 """Executable-operation inventory shared by solver-facing tooling and generation.
 
 This declarative module records only operations implemented by ``solver.apply``.
-It contains no generator provenance and is safe for public solver imports.
+It contains no generator provenance and validates itself against the executor contract.
 """
 from __future__ import annotations
 from dataclasses import asdict, dataclass
 from typing import Any
+
+from .solver import SUPPORTED_OPERATION_NAMES
 
 @dataclass(frozen=True)
 class OperationSpec:
@@ -21,12 +23,21 @@ _OPERATION_SPECS = (
     OperationSpec("reflect", "geometry", "axis: horizontal or vertical", "asymmetric grid about selected axis", "same shape", True, False, False, True, True, "constructive asymmetric world"),
     OperationSpec("crop", "shape", "background: observed color", "non-background extent", "bounding rectangle", False, True, False, True, False, "excluded: safe compositions not yet constructively modelled"),
     OperationSpec("extract_object", "object", "background; unique selector", "unique selected component", "selected component bounding rectangle", False, True, True, True, False, "excluded: object curriculum not yet implemented"),
+    OperationSpec("render_objects", "object", "background; predicate; canvas", "one or more selected components", "input or selected bounding canvas", False, True, True, True, False, "excluded: object curriculum not yet implemented"),
+    OperationSpec("recolor_objects", "object", "background; predicate; color", "one or more selected components", "same shape", True, True, True, True, False, "excluded: object curriculum not yet implemented"),
+    OperationSpec("repeat_object", "object", "background; predicate; bounded count; axis; gap", "exactly one selected component", "constructed repetition canvas", False, True, True, True, False, "excluded: object curriculum not yet implemented"),
+    OperationSpec("render_related", "object", "background; unique reference; relation; canvas", "relation-selected components", "input or selected bounding canvas", False, True, True, True, False, "excluded: object curriculum not yet implemented"),
     OperationSpec("translate", "geometry", "offset: bounded (dr, dc); background", "movable non-background content", "same shape", True, True, False, True, True, "constructive padded world"),
     OperationSpec("fill", "region", "background; color='enclosing' or color", "enclosed background region", "same shape", True, True, True, True, False, "excluded: safe composition model not yet implemented"),
     OperationSpec("outline", "shape", "background", "solid interior cell", "same shape", True, True, True, True, False, "excluded: safe composition model not yet implemented"),
 )
 
 OPERATION_SPECS = {spec.name: spec for spec in _OPERATION_SPECS}
+_inventory_names = frozenset(OPERATION_SPECS)
+if _inventory_names != SUPPORTED_OPERATION_NAMES:
+    missing = sorted(SUPPORTED_OPERATION_NAMES - _inventory_names)
+    stale = sorted(_inventory_names - SUPPORTED_OPERATION_NAMES)
+    raise RuntimeError(f"operation inventory/executor mismatch: missing={missing}, stale={stale}")
 GENERATOR_OPERATION_NAMES = tuple(spec.name for spec in _OPERATION_SPECS if spec.generator_supported)
 GENERATOR_FAMILIES = tuple(sorted({OPERATION_SPECS[name].family for name in GENERATOR_OPERATION_NAMES}))
 
