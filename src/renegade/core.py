@@ -45,6 +45,10 @@ class EventKind(str, Enum):
     INVARIANT_RECORDED = "invariant.recorded"
     ARCHETYPE_CREATED = "archetype.created"
     ARCHETYPE_RECORDED = "archetype.recorded"
+    TASK_CREATED = "task.created"
+    TASK_GRID_STARTED = "task.grid.started"
+    TASK_GRID_COMPLETED = "task.grid.completed"
+    TASK_COMPLETED = "task.completed"
 
 
 class Outcome(str, Enum):

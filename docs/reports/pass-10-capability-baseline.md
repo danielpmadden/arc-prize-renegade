@@ -4,6 +4,14 @@
 > describes runs from this checkout; it does not claim official status or
 > semantic capability.
 
+## Pass 11 addendum: ARC task representation
+
+This branch adds immutable ARC task containers and canonical JSON parsing.
+Each task grid is independently passed through the existing structural
+pipeline, with deterministic task events and count-only diagnostics. This is
+representation and inspection only: it does not compare grids, discover
+transformations, reason, or solve ARC.
+
 ## Tested input classes
 
 Evidence consists of the 19 packaged golden grids, 107 exhaustive tiny grids

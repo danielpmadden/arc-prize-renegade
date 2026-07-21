@@ -55,6 +55,8 @@ class RenegadeCoreTests(unittest.TestCase):
             "derive_same_bounds_groups", "derive_translation_families",
             "Archetype", "ArchetypeKind", "ArchetypeRegistry", "ArchetypeSet", "derive_archetypes",
             "PipelineDiagnostics", "summarize_pipeline",
+            "GridRole", "Task", "TaskGrid", "TaskKind", "TrainingPair", "inspect_task", "load_task",
+            "TaskDiagnostics", "TaskGridDiagnostics", "TrainingPairDiagnostics", "summarize_task", "summarize_task_grid", "summarize_training_pair",
         }
         self.assertEqual(set(renegade.__all__), expected)
         self.assertTrue(all(hasattr(renegade, name) for name in renegade.__all__))

@@ -52,6 +52,14 @@ Future: Concept Association → Interpretation → Hypothesis → Reasoning
 The implemented layers are structural only. An archetype is an exact motif
 derived from invariants, not an object label, interpretation, or prediction.
 
+## ARC Task Representation
+
+The checkout can parse canonical ARC JSON and represent ordered training
+input/output grids and one or more test inputs. `inspect_task` runs the
+existing structural pipeline independently for every grid and retains
+task-level provenance, identities, and ordered events. It does **not** compare
+grids, discover transformations, reason, or solve ARC.
+
 ## Repository Structure
 
 - `src/renegade/` — installable package and deterministic pipeline.
@@ -100,7 +108,7 @@ deterministic inspection report. For a concise programmatic report, use
 
 The repository intentionally does **not** implement concept association,
 semantic interpretation, hypotheses, reasoning, reflection, learning, search,
-ARC task loading, ARC evaluation, ARC solving, neural methods, or machine
+ARC evaluation, ARC solving, neural methods, or machine
 learning. Relationships and archetypes make no semantic inference.
 
 ## Roadmap
