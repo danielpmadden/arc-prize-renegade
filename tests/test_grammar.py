@@ -20,9 +20,11 @@ class GrammarTests(unittest.TestCase):
         unique = DEFAULT_REGISTRY.expression("unique", (objects,))
         with self.assertRaises(ValueError):
             evaluate(unique, ((0, 1, 0, 2),))
+        with self.assertRaises(ValueError):
+            DEFAULT_REGISTRY.expression("related", (scene, unique), {"relation": "nearest"})
 
     def test_registry_and_curriculum_are_deterministic(self):
-        self.assertEqual(validate_registry()["operation_count"], 8)
+        self.assertEqual(validate_registry()["operation_count"], 9)
         first, second = evaluate_curriculum(), evaluate_curriculum()
         self.assertEqual(first, second)
         self.assertEqual(first["solved"], first["case_count"])
