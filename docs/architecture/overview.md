@@ -56,6 +56,12 @@ or cognition is derived.
 - `diagnostics.py` — count-only result summary.
 - `playground.py` — command-line rendering for inspection.
 - `core.py` — general one-capability execution foundation and workspace.
+- `solver.py` — bounded search and the authoritative executable-operation
+  contract.
+- `operations.py` — solver-facing operation metadata. It verifies at import
+  that the inventory names exactly match the executor contract, preventing
+  generator and audit reports from omitting executable operations or reporting
+  stale ones.
 
 For an entry point and commands, see the [root README](../../README.md). For
 document roles and preserved pass journals, see the

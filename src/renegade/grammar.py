@@ -171,35 +171,32 @@ def _selection_expressions(
             all_sets.update(exact)
     return tuple(sorted(all_sets, key=lambda item: (_depth(item), item.canonical)))
 
+def _expression_depth(expr: Expr) -> int:
+    """Return the longest operation path below ``expr`` (excluding input)."""
+    if expr.operation == "input": return 0
+    return 1 + max((_expression_depth(argument) for argument in expr.arguments), default=0)
+
 def search(training: tuple[tuple[Grid,Grid],...], test_inputs: tuple[Grid,...], *, config: GrammarConfig=GrammarConfig(), registry: OperationRegistry=DEFAULT_REGISTRY) -> GrammarResult:
     """Enumerate finite typed compositions; targets only validate completed programs."""
     if not training: raise ValueError("training pairs required")
     palette=sorted({v for a,b in training for g in (a,b) for row in g for v in row}, key=repr)[:config.max_literals]
     backgrounds=sorted({max(Counter(v for row in a for v in row), key=lambda x:(Counter(v for row in a for v in row)[x],repr(x))) for a,_ in training},key=repr)[:config.max_scene_interpretations]
-    telemetry={"generated":defaultdict(int),"rejected":0,"retained":defaultdict(int),"cache_hits":0,"cache_misses":0,"scene_interpretations":len(backgrounds),"truncated":False,"max_candidates":config.max_candidates}
+    telemetry={"generated":defaultdict(int),"rejected":0,"depth_rejected":0,"retained":defaultdict(int),"cache_hits":0,"cache_misses":0,"scene_interpretations":len(backgrounds),"truncated":False,"max_candidates":config.max_candidates,"max_depth":config.max_depth}
     found=[]; cache={}
     for bg in backgrounds:
-      root=registry.expression("input")
-      scene=registry.expression("segment",(root,),{"background":bg,"connectivity":4})
-      canvas_by_mode={mode: registry.expression("canvas",(scene,),{"mode":mode}) for mode in ("tight","preserve")}
-      for selected in _selection_expressions(registry, scene, tuple(palette), config.max_depth - 1):
-       for mode, canvas in canvas_by_mode.items():
-        if len(found)+telemetry["rejected"] >= config.max_candidates:
-         telemetry["truncated"]=True
-         break
-        expr=registry.expression("render",(selected,canvas))
-        if _depth(expr) > config.max_depth:
-         continue
-        telemetry["generated"][expr.output_type.value]+=1
-        try: fits=all(evaluate(expr,a,registry=registry,cache=cache)==b for a,b in training)
-        except (ValueError,TypeError,IndexError): fits=False
-        if fits: found.append(expr); telemetry["retained"][expr.output_type.value]+=1
-        else: telemetry["rejected"]+=1
-      if telemetry["truncated"]:
-       break
-    found=sorted(set(found),key=lambda x:(_depth(x),x.canonical))
-    stats=cache.get(("__grammar_stats__", ()), {"hits":0,"misses":0})
-    telemetry["cache_entries"]=len(cache)-1; telemetry["cache_hits"]=stats["hits"]; telemetry["cache_misses"]=stats["misses"]
+      for predicate in ("all","largest","smallest","border","interior"):
+       for color in [-1,*palette]:
+        for mode in ("tight","preserve"):
+         if len(found)+telemetry["rejected"] >= config.max_candidates: telemetry["truncated"]=True; break
+         expr=_chain(registry,bg,color,predicate,mode); telemetry["generated"][expr.output_type.value]+=1
+         if _expression_depth(expr) > config.max_depth:
+             telemetry["depth_rejected"] += 1
+             continue
+         try: fits=all(evaluate(expr,a,registry=registry,cache=cache)==b for a,b in training)
+         except (ValueError,TypeError,IndexError): fits=False
+         if fits: found.append(expr); telemetry["retained"][expr.output_type.value]+=1
+         else: telemetry["rejected"]+=1
+    found=sorted(set(found),key=lambda x:(x.canonical.count("("),x.canonical))
     if not found: return GrammarResult(None,(),(),dict(telemetry),GrammarFailure("search","no exact typed composition within budget"))
     selected=found[0]
     try: predictions=tuple(evaluate(selected,x,registry=registry,cache=cache) for x in test_inputs)
