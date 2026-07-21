@@ -13,6 +13,7 @@ from enum import Enum
 from typing import Any, Iterable
 
 from .tasks import Task, inspect_task
+from .scene import ObjectSelector, SelectorKind, Scene
 
 Grid = tuple[tuple[Any, ...], ...]
 
@@ -140,6 +141,11 @@ def apply(operation: Operation, grid: Grid) -> Grid:
         bg = operation.parameter("background"); cells = [(r,c) for r,row in enumerate(grid) for c,v in enumerate(row) if v != bg]
         if not cells: return grid
         rs, cs = zip(*cells); return tuple(tuple(row[min(cs):max(cs)+1]) for row in grid[min(rs):max(rs)+1])
+    if k == "extract_object":
+        scene = Scene.from_grid(grid, operation.parameter("background"))
+        extracted = scene.extract(ObjectSelector(SelectorKind(operation.parameter("selector"))))
+        if extracted is None: raise ValueError("object selector is ambiguous or absent")
+        return extracted
     if k == "translate":
         dr, dc = operation.parameter("offset"); bg = operation.parameter("background"); canvas = [[bg] * len(grid[0]) for _ in grid]
         for r, row in enumerate(grid):
@@ -206,6 +212,7 @@ def _infer_primitives(pairs: tuple[tuple[Grid, Grid], ...]) -> tuple[Program, ..
     backgrounds = {background(source) for source, _ in pairs}
     if len(backgrounds) == 1:
         bg = next(iter(backgrounds)); candidates += [Operation.make("crop", background=bg), Operation.make("fill", background=bg, color="enclosing"), Operation.make("outline", background=bg)]
+        candidates += [Operation.make("extract_object", background=bg, selector=kind.value) for kind in SelectorKind]
         h, w = len(pairs[0][0]), len(pairs[0][0][0])
         candidates += [Operation.make("translate", offset=(dr,dc), background=bg) for dr in range(-h,h+1) for dc in range(-w,w+1)]
     return tuple(Program((op,)) for op in candidates if _fits(op, pairs))
@@ -222,6 +229,10 @@ def _prefix_operations(sources: tuple[Grid, ...], targets: tuple[Grid, ...], con
     bgs = {background(grid) for grid in sources}
     if len(bgs) == 1:
         bg = next(iter(bgs))
+        # Crop is a general dimension-changing primitive.  It is included in
+        # prefixes so later fitted operations can consume a smaller state.
+        ops.append(Operation.make("crop", background=bg))
+        ops += [Operation.make("extract_object", background=bg, selector=kind.value) for kind in SelectorKind]
         ops += [Operation.make("translate", offset=(dr,dc), background=bg) for dr in range(-config.max_displacement,config.max_displacement+1) for dc in range(-config.max_displacement,config.max_displacement+1) if (dr,dc) != (0,0)]
     return tuple(ops)
 
@@ -242,13 +253,15 @@ def solve_task(task: Task, *, max_depth: int = 2, max_candidates: int = 512, con
     inspected = inspect_task(task) if not task.trace else task
     pairs = tuple((p.input_grid.raw_grid, p.output_grid.raw_grid) for p in inspected.training_pairs)
     sources, targets = tuple(x for x,_ in pairs), tuple(y for _,y in pairs)
-    telemetry: dict[str, Any] = {"config":{"max_depth":config.max_depth,"max_candidates":config.max_candidates,"max_prefix_states":config.max_prefix_states,"max_displacement":config.max_displacement}, "primitive_candidates_attempted":0,"primitive_candidates_train_valid":0,"depth_two_prefixes_attempted":0,"depth_two_unique_intermediate_states":0,"depth_two_complete_programs_attempted":0,"depth_two_train_valid":0,"depth_three_prefixes_attempted":0,"depth_three_complete_programs_attempted":0,"depth_three_train_valid":0,"duplicate_states_removed":0,"rejected_by_reason":defaultdict(int)}
+    telemetry: dict[str, Any] = {"config":{"max_depth":config.max_depth,"max_candidates":config.max_candidates,"max_prefix_states":config.max_prefix_states,"max_displacement":config.max_displacement}, "primitive_candidates_attempted":0,"primitive_candidates_train_valid":0,"search_by_depth": {str(depth): {"prefixes_attempted": 0, "unique_intermediate_states": 0, "complete_programs_attempted": 0, "train_valid_programs": 0, "duplicates_removed": 0} for depth in range(1, config.max_depth + 1)}, "rejected_by_reason":defaultdict(int)}
     rejected: list[Validation] = []; valid: dict[str, Program] = {}; explored = 0
     def consider(program: Program, depth_key: str) -> None:
         nonlocal explored
         if explored >= config.max_candidates: return
         explored += 1; verdict = _validate(program, pairs)
-        if verdict.passed: valid.setdefault(program.canonical, program); telemetry[f"{depth_key}_train_valid"] = telemetry.get(f"{depth_key}_train_valid", 0) + 1
+        if verdict.passed:
+            valid.setdefault(program.canonical, program)
+            if depth_key != "primitive_candidates": telemetry["search_by_depth"][depth_key]["train_valid_programs"] += 1
         else: rejected.append(verdict); telemetry["rejected_by_reason"][verdict.reason or "unknown"] += 1
     for program in _infer_primitives(pairs):
         telemetry["primitive_candidates_attempted"] += 1; consider(program, "primitive_candidates")
@@ -258,39 +271,56 @@ def solve_task(task: Task, *, max_depth: int = 2, max_candidates: int = 512, con
         next_prefixes: dict[tuple[Grid, ...], Program] = {}
         for state, prefix in sorted(prefixes.items(), key=lambda item: item[1].canonical):
             for op in _prefix_operations(state, targets, config):
-                key = f"depth_{depth + 1}"
-                telemetry[f"{key}_prefixes_attempted"] = telemetry.get(f"{key}_prefixes_attempted", 0) + 1
+                key = str(depth + 1)
+                telemetry["search_by_depth"][key]["prefixes_attempted"] += 1
                 try: next_state = tuple(apply(op, grid) for grid in state)
                 except (KeyError, TypeError, ValueError): telemetry["rejected_by_reason"]["prefix_execution_failure"] += 1; continue
                 candidate_prefix = Program(prefix.operations + (op,))
                 old = next_prefixes.get(next_state)
                 if old is None or candidate_prefix.canonical < old.canonical: next_prefixes[next_state] = candidate_prefix
-                else: telemetry["duplicate_states_removed"] += 1
+                else:
+                    telemetry["search_by_depth"][key]["duplicates_removed"] += 1
         prefixes = dict(sorted(next_prefixes.items(), key=lambda item: item[1].canonical)[:config.max_prefix_states])
-        telemetry[f"depth_{depth}_unique_intermediate_states"] = len(prefixes)
+        telemetry["search_by_depth"][str(depth)]["unique_intermediate_states"] = len(prefixes)
         for state, prefix in prefixes.items():
             for final in _infer_primitives(tuple(zip(state, targets))):
                 program = Program(prefix.operations + final.operations)
                 if program.depth != depth + 1: continue
-                telemetry[f"depth_{depth + 1}_complete_programs_attempted"] = telemetry.get(f"depth_{depth + 1}_complete_programs_attempted", 0) + 1
-                consider(program, f"depth_{depth + 1}")
+                telemetry["search_by_depth"][str(depth + 1)]["complete_programs_attempted"] += 1
+                consider(program, str(depth + 1))
         # For the next layer, prefixes must be exactly this depth, not fitted finals.
     if not rejected and not valid:
         rejected.append(_validate(Program((Operation.make("identity"),)), pairs))
     # Preserve the prior primitive preference (identity, rotations, reflections,
     # recolor, then shape/translation operations) as the deterministic
     # ambiguity fallback; composition remains secondary to a shorter program.
-    operation_rank = {"identity": 0, "rotate": 1, "reflect": 2, "recolor": 3, "crop": 4, "fill": 5, "outline": 6, "translate": 7}
+    operation_rank = {"identity": 0, "rotate": 1, "reflect": 2, "recolor": 3, "crop": 4, "extract_object": 5, "fill": 6, "outline": 7, "translate": 8}
     ordered = tuple(sorted(valid.values(), key=lambda p: (p.depth, tuple(operation_rank.get(op.kind, 99) for op in p.operations), p.canonical)))
     predictions_by_output: dict[tuple[Grid, ...], list[Program]] = defaultdict(list)
-    for program in ordered: predictions_by_output[tuple(execute(program, grid.raw_grid) for grid in inspected.test_inputs)].append(program)
-    selected = ordered[0] if ordered else None
+    executable: list[Program] = []
+    for program in ordered:
+        try:
+            output = tuple(execute(program, grid.raw_grid) for grid in inspected.test_inputs)
+        except (KeyError, TypeError, ValueError):
+            telemetry["rejected_by_reason"]["test_execution_failure"] += 1
+            continue
+        predictions_by_output[output].append(program); executable.append(program)
+    selected = executable[0] if executable else None
     predictions: tuple[Grid, ...] = ()
     if selected:
         # Existing solver behavior ranked exact hypotheses by stable canonical
         # order.  Preserve that documented deterministic fallback while making
         # disagreement explicit in telemetry and status.
         predictions = tuple(execute(selected, grid.raw_grid) for grid in inspected.test_inputs)
+    # Compatibility aliases are derived after search; canonical consumers use
+    # search_by_depth and no counters are maintained twice during execution.
+    for depth, values in telemetry["search_by_depth"].items():
+        word = {"1": "one", "2": "two", "3": "three"}[depth]
+        telemetry[f"depth_{depth}_prefixes_attempted"] = values["prefixes_attempted"]
+        telemetry[f"depth_{depth}_unique_intermediate_states"] = values["unique_intermediate_states"]
+        telemetry[f"depth_{depth}_complete_programs_attempted"] = values["complete_programs_attempted"]
+        telemetry[f"depth_{depth}_train_valid"] = values["train_valid_programs"]
+    telemetry["duplicate_states_removed"] = sum(v["duplicates_removed"] for v in telemetry["search_by_depth"].values())
     telemetry["train_valid_candidate_count"] = len(ordered); telemetry["distinct_test_prediction_count"] = len(predictions_by_output)
     telemetry["selected_program"] = selected.canonical if selected else None; telemetry["selected_program_depth"] = selected.depth if selected else None
     telemetry["selection_reason"] = "unanimous_prediction" if len(predictions_by_output) == 1 and selected else "deterministic_ranked_ambiguity" if selected else "no_train_valid_program"

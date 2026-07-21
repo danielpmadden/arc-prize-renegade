@@ -68,3 +68,5 @@ from .solver import ChangeKind, ChangeSummary, Correspondence, Operation, Progra
 __all__ += ["ChangeKind", "ChangeSummary", "Correspondence", "Operation", "Program", "SolverResult", "Validation", "apply", "correspondence", "execute", "solve_task"]
 from .generator import DIFFICULTIES, GeneratedTask, canonical_hash, difficulty_spec, generate_batch, generate_task, validate_generated
 __all__ += ["DIFFICULTIES", "GeneratedTask", "canonical_hash", "difficulty_spec", "generate_batch", "generate_task", "validate_generated"]
+from .scene import BoundingBox, ObjectRelation, ObjectSelector, RelationKind, Scene, SceneObject, SelectorKind
+__all__ += ["BoundingBox", "ObjectRelation", "ObjectSelector", "RelationKind", "Scene", "SceneObject", "SelectorKind"]
