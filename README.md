@@ -181,3 +181,12 @@ reflection, non-background crop, bounded translation, enclosed-region fill,
 and outline. Short deterministic compositions are enumerated at depth two.
 A prediction is not called test-correct unless a separately available expected
 test output is compared after solving.
+
+### Synthetic diversity controls
+
+Synthetic generation defaults to deterministic `balanced` sampling. The audited
+shared inventory distinguishes solver-executable operations from the smaller,
+constructively generator-supported subset. Use `--sampling natural` to observe
+native seeded sampling, or `--sampling balanced` for even eligible-slot
+allocation. Generated programs pass prefix-effectiveness and stage-ablation
+checks; these generator-native results remain distinct from ARC transfer.

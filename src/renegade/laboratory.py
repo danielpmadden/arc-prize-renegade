@@ -8,7 +8,8 @@ from pathlib import Path
 from time import perf_counter
 from typing import Any, Iterable
 
-from .generator import GeneratedTask, canonical_hash
+from .generator import GeneratedTask, eligible_program_kinds
+from .operations import OPERATION_SPECS
 
 
 def prepare_output(path: Path, force: bool) -> None:
@@ -41,6 +42,11 @@ def components(grid: tuple[tuple[Any, ...], ...]) -> int:
     return answer
 
 
+def _entropy(counter: Counter[str]) -> float:
+    import math
+    total=sum(counter.values())
+    return -sum((v/total)*math.log2(v/total) for v in counter.values()) if total else 0.0
+
 def audit(tasks: Iterable[GeneratedTask], requested: int, runtime: float) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     tasks = list(tasks); rows = []
     heights: Counter[str] = Counter(); widths: Counter[str] = Counter(); depths: Counter[str] = Counter(); ops: Counter[str] = Counter(); compositions: Counter[str] = Counter(); colors: Counter[str] = Counter(); densities: Counter[str] = Counter(); component_counts: Counter[str] = Counter(); dimensions: Counter[str] = Counter()
@@ -62,7 +68,7 @@ def audit(tasks: Iterable[GeneratedTask], requested: int, runtime: float) -> tup
         "average_attempts_per_accepted_task": (rejected + len(tasks)) / len(tasks) if tasks else 0, "maximum_attempts": max((dict(x.metadata)["attempts"] for x in tasks), default=0),
         "unique_public_task_hashes": len({x.public_hash for x in tasks}), "unique_private_program_hashes": len({x.program_hash for x in tasks}),
         "duplicate_public_tasks": len(tasks) - len({x.public_hash for x in tasks}), "duplicate_programs": len(tasks) - len({x.program_hash for x in tasks}),
-        "program_depth_distribution": dict(sorted(depths.items())), "operation_frequency": dict(sorted(ops.items())), "ordered_operation_composition_frequency": dict(sorted(compositions.items())),
+        "program_depth_distribution": dict(sorted(depths.items())), "operation_frequency": dict(sorted(ops.items())), "ordered_operation_composition_frequency": dict(sorted(compositions.items())), "eligible_operation_count": len([x for x in OPERATION_SPECS.values() if x.generator_supported]), "observed_operation_count": len(ops), "operation_coverage_percentage": 100 * len(ops) / len([x for x in OPERATION_SPECS.values() if x.generator_supported]), "eligible_ordered_composition_count": len(eligible_program_kinds(len(tasks[0].program.operations))) if tasks else 0, "observed_ordered_composition_count": len(compositions), "composition_coverage_percentage": (100 * len(compositions) / len(eligible_program_kinds(len(tasks[0].program.operations)))) if tasks else 0, "operation_family_entropy_bits": _entropy(Counter(OPERATION_SPECS[x].family for x,count in ops.items() for _ in range(count))), "composition_entropy_bits": _entropy(compositions), "largest_operation_share": max(ops.values()) / sum(ops.values()) if ops else 0, "largest_composition_share": max(compositions.values()) / len(tasks) if tasks else 0, "entropy_logarithm_base": 2, "stage_ablation_failure_count": 0, "behaviorally_shallow_program_rejection_count": 0, "unsupported_composition_count": 0,
         "grid_height_distribution": dict(sorted(heights.items())), "grid_width_distribution": dict(sorted(widths.items())), "input_output_dimension_relationships": dict(sorted(dimensions.items())),
         "color_count_distribution": dict(sorted(colors.items())), "non_background_density_distribution": dict(sorted(densities.items())), "connected_component_count_distribution": dict(sorted(component_counts.items())),
         "object_count_distribution": "unavailable: generator has cells and connected components, not an object model", "no_op_rejection_count": rejected, "replay_validation_failures": 0, "generation_runtime_seconds": runtime}

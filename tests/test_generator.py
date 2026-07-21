@@ -46,3 +46,18 @@ class GeneratorTests(unittest.TestCase):
     def test_invalid_arguments_are_rejected(self):
         with self.assertRaises(ValueError): generate_task(1, difficulty=4)
         self.assertEqual(generate_batch(1, 0), ())
+
+class DiversityRegressionTests(unittest.TestCase):
+    def test_balanced_coverage_prevents_recolor_collapse(self):
+        from renegade.generator import eligible_program_kinds
+        one = generate_batch(42, 12, difficulty=1, sampling="balanced")
+        self.assertEqual({x.program.operations[0].kind for x in one}, {x[0] for x in eligible_program_kinds(1)})
+        two = generate_batch(42, 24, difficulty=2, sampling="balanced")
+        compositions = {tuple(op.kind for op in x.program.operations) for x in two}
+        self.assertEqual(compositions, set(eligible_program_kinds(2)))
+        self.assertTrue(any(a != b for a,b in compositions))
+        self.assertTrue(all(len(x.program.operations) == 2 for x in two))
+    def test_three_stage_programs_are_effective(self):
+        for item in generate_batch(11, 9, difficulty=3, sampling="balanced"):
+            validate_generated(item)
+            self.assertEqual(len(item.program.operations), 3)
