@@ -13,6 +13,8 @@ from typing import Any, Callable, TypeAlias
 from .observations import Observation, ObservationFrame, ObservationRegistry
 from .measurements import Measurement, MeasurementRegistry, MeasurementSet
 from .percepts import Percept, PerceptRegistry, PerceptSet
+from .relationships import PerceptGraph, RelationshipRegistry
+from .invariants import InvariantRegistry
 
 
 Details: TypeAlias = tuple[tuple[str, Any], ...]
@@ -35,6 +37,11 @@ class EventKind(str, Enum):
     CAPABILITY_STARTED = "capability.started"
     PERCEPT_CREATED = "percept.created"
     PERCEPT_RECORDED = "percept.recorded"
+    RELATIONSHIP_CREATED = "relationship.created"
+    RELATIONSHIP_RECORDED = "relationship.recorded"
+    GRAPH_ASSEMBLED = "graph.assembled"
+    INVARIANT_CREATED = "invariant.created"
+    INVARIANT_RECORDED = "invariant.recorded"
 
 
 class Outcome(str, Enum):
@@ -136,6 +143,9 @@ class Workspace:
     observations: ObservationRegistry = field(default_factory=ObservationRegistry)
     measurements: MeasurementRegistry = field(default_factory=MeasurementRegistry)
     percepts: PerceptRegistry = field(default_factory=PerceptRegistry)
+    relationships: RelationshipRegistry = field(default_factory=RelationshipRegistry)
+    percept_graph: PerceptGraph | None = None
+    invariants: InvariantRegistry = field(default_factory=InvariantRegistry)
     result: Any | None = None
     outcome: Outcome = Outcome.PENDING
     failure_reason: str | None = None

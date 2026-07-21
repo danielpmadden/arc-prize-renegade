@@ -57,3 +57,9 @@ current tree, see [MILESTONES.md](MILESTONES.md).
   exact in-memory observation registration.
 - Add explicit observation-frame execution events and a structured-input module
   demonstration without interpretation.
+
+## Unreleased — Pass 7
+- Added deterministic structural relationships, registries, and a percept graph.
+
+## Unreleased — Pass 8
+- Added deterministic structural invariant records, grouping capabilities, registry, pipeline tracing, and playground inspection.

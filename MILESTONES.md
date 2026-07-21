@@ -470,3 +470,9 @@ same-value region formation, workspace separation, trace events, and the
 `python -m renegade.playground` JSON-grid inspection tool. Verification uses
 the documented unit, compilation, module, and diff checks. Semantic
 interpretation, reasoning, learning, and ARC solving remain absent.
+
+## Pass 7 — Deterministic structural relationships and percept graph (experimental branch)
+Implemented immutable identity-based structural relationship records, bounded exact pairwise derivation, a relationship registry, and a read-only percept graph. Symmetric endpoints are canonicalized; directional facts emit explicit inverse records. The pipeline and playground now expose relationship records and graph counts. Verification: `python -m unittest discover -s tests -v`, `python -m compileall -q src tests`, and playground examples. Concept association, interpretation, hypotheses, reasoning, reflection, learning, and ARC solving remain absent.
+
+## Pass 8 — Structural invariants (experimental branch)
+Added immutable, identity-based invariant records that compress connected SAME_VALUE, SAME_COORDINATE_SHAPE, SAME_CELL_COUNT, SAME_BOUNDS_SIZE, and TRANSLATED_COPY relationship groups. The pipeline records invariants after relationships and the playground reports them. Invariants are structural regularities, not concepts, interpretations, hypotheses, reasoning, learning, or ARC solving.

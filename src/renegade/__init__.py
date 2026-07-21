@@ -21,6 +21,8 @@ from .measurements import (
 )
 from .percepts import Percept, PerceptKind, PerceptRegistry, PerceptSet, form_connected_regions, form_frame_percept
 from .pipeline import PerceptPipelineResult, inspect_grid
+from .relationships import PerceptGraph, RelationshipDirection, RelationshipKind, RelationshipRegistry, RelationshipSet, StructuralRelationship, derive_alignment_relationships, derive_exact_comparison_relationships, derive_frame_relationships, derive_relationships, derive_spatial_relationships, derive_topological_relationships
+from .invariants import Invariant, InvariantKind, InvariantRegistry, InvariantSet, derive_invariants, derive_same_bounds_groups, derive_same_cell_count_groups, derive_same_shape_groups, derive_same_value_groups, derive_translation_families
 
 __all__ = [
     "Capability",
@@ -50,4 +52,7 @@ __all__ = [
     "measure_observation_count",
     "Percept", "PerceptKind", "PerceptRegistry", "PerceptSet",
     "PerceptPipelineResult", "form_connected_regions", "form_frame_percept", "inspect_grid",
+    "PerceptGraph", "RelationshipDirection", "RelationshipKind", "RelationshipRegistry", "RelationshipSet", "StructuralRelationship", "derive_relationships",
+    "derive_topological_relationships", "derive_spatial_relationships", "derive_alignment_relationships", "derive_exact_comparison_relationships", "derive_frame_relationships",
+    "Invariant", "InvariantKind", "InvariantRegistry", "InvariantSet", "derive_invariants", "derive_same_value_groups", "derive_same_shape_groups", "derive_same_cell_count_groups", "derive_same_bounds_groups", "derive_translation_families",
 ]

@@ -46,6 +46,13 @@ class RenegadeCoreTests(unittest.TestCase):
             "measure_observation_count",
             "Percept", "PerceptKind", "PerceptRegistry", "PerceptSet", "PerceptPipelineResult",
             "form_connected_regions", "form_frame_percept", "inspect_grid",
+            "PerceptGraph", "RelationshipDirection", "RelationshipKind", "RelationshipRegistry",
+            "RelationshipSet", "StructuralRelationship", "derive_relationships",
+            "derive_topological_relationships", "derive_spatial_relationships", "derive_alignment_relationships",
+            "derive_exact_comparison_relationships", "derive_frame_relationships",
+            "Invariant", "InvariantKind", "InvariantRegistry", "InvariantSet", "derive_invariants",
+            "derive_same_value_groups", "derive_same_shape_groups", "derive_same_cell_count_groups",
+            "derive_same_bounds_groups", "derive_translation_families",
         }
         self.assertEqual(set(renegade.__all__), expected)
         self.assertTrue(all(hasattr(renegade, name) for name in renegade.__all__))
