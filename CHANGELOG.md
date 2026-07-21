@@ -12,6 +12,8 @@ current tree, see [MILESTONES.md](MILESTONES.md).
 
 ### Documentation
 
+- Record that the reconciliation audit is merged and that the repository is
+  ready for the perception stage.
 - Reconcile the README, architecture overview, concept specification, and
   milestone audit with the observation and measurement implementation,
   including the intentionally limited immutable `Concept` value.

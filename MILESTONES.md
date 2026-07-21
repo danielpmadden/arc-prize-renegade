@@ -442,3 +442,16 @@ This correction supersedes only the current-tree portion of the earlier audit
 that said no `Concept` implementation existed. The preserved Milestone 0.3
 claims about a concept registry and relationships remain unsupported by the
 current tree.
+
+---
+
+# Post-Merge Status Addendum
+
+This append-only addendum records the status change after the preserved
+pre-merge entries above.
+
+- Milestone 0.4 / Pass 4 was merged into main.
+- Milestone 0.5 / Pass 5 was merged into main.
+- Reconciliation Pass 5.5 was merged into main.
+- Observation and measurement are now part of the current official repository.
+- Perception remains the next unimplemented architectural layer.

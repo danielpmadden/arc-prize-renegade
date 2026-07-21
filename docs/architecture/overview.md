@@ -1,6 +1,6 @@
 # Architecture Overview
 
-> **Document role: implementation overview.** It describes the current source tree and does not promote this branch to official status.
+> **Document role: implementation overview.** It describes the current source tree and does not by itself establish official status.
 
 ```
 Environment

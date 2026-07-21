@@ -122,21 +122,20 @@ lifecycle management, or learning.
 
 - ✓ Repository Foundation
 - ✓ Identity
-- ✓ Lifecycle (explicit transition decisions only)
-- ✓ Evidence (references only)
-- ✓ Concepts (immutable values only)
+- ✓ Lifecycle primitives
+- ✓ Evidence references
+- ✓ Concepts as immutable values
 - ✓ Execution
 - ✓ Observation
 - ✓ Measurement
+- ✓ Repository reconciliation / documentation audit
 
-**Current work**
+**Next architectural work**
 
-- Repository reconciliation and documentation verification; no new cognitive
-  subsystem is being introduced.
+- Perception and percepts
 
 **Future work**
 
-- Perception and percepts
 - Semantic relationships and interpretation
 - Hypothesis generation and reasoning
 - Reflection and learning
