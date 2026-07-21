@@ -224,3 +224,24 @@ but no longer fully describe this tree. The repository now also contains an
 harness described below. It remains a narrow symbolic program-search system,
 not evidence of general reasoning, learning, or official ARC transfer. See the
 [current constitutional alignment review](docs/reports/constitutional-alignment-review-2026-07-21.md) and the machine-readable dormant [Seed Bank](docs/knowledge/seed-bank.json).
+
+## Experimental typed composition grammar
+
+The current branch also contains a small, typed and bounded object-composition
+grammar (`renegade.grammar`).  It is an experimental complement to, not a
+replacement for, the legacy grid-program solver.  Immutable versioned
+expressions compose segmentation, extraction, filtering, recolouring, canvas
+choice and rendering; cached scene expressions prevent downstream stages from
+reconstructing a scene.  It has explicit ambiguity failures and bounded,
+typed-only candidate construction.  Run:
+
+```bash
+PYTHONPATH=src python -m renegade.grammar_cli inspect --json
+PYTHONPATH=src python -m renegade.grammar_cli validate --json
+PYTHONPATH=src python -m renegade.grammar_cli curriculum --json
+```
+
+The composition curriculum is synthetic and evaluator-private: its held-out
+labels are not passed to synthesis.  It is not an official ARC measurement,
+does not establish transfer or learning, and does not promote any capability
+to stable.  See the [typed grammar report](docs/reports/typed-composition-grammar-v1.md).
