@@ -53,6 +53,8 @@ class RenegadeCoreTests(unittest.TestCase):
             "Invariant", "InvariantKind", "InvariantRegistry", "InvariantSet", "derive_invariants",
             "derive_same_value_groups", "derive_same_shape_groups", "derive_same_cell_count_groups",
             "derive_same_bounds_groups", "derive_translation_families",
+            "Archetype", "ArchetypeKind", "ArchetypeRegistry", "ArchetypeSet", "derive_archetypes",
+            "PipelineDiagnostics", "summarize_pipeline",
         }
         self.assertEqual(set(renegade.__all__), expected)
         self.assertTrue(all(hasattr(renegade, name) for name in renegade.__all__))
