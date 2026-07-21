@@ -1,8 +1,9 @@
 # Concepts
 
 > **Document role: specification.** This document describes an intended concept
-> model. No `Concept`, `ConceptRegistry`, concept relationship, or concept
-> execution implementation exists in the current repository.
+> model. The current repository provides only immutable `Concept` values and
+> `ConceptCategory` labels; it has no `ConceptRegistry`, concept relationship,
+> extraction, or concept-execution implementation.
 
 ## Purpose
 

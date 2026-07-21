@@ -1,4 +1,4 @@
-"""Deterministic, inspectable primitives for the first Renegade reasoning cycle.
+"""Deterministic, inspectable primitives for one explicit execution attempt.
 
 This module deliberately implements only observation, capability retrieval, execution,
 trace recording, and memory recording. It does not validate or promote capabilities.
@@ -19,7 +19,7 @@ CapabilityFunction: TypeAlias = Callable[[Any], Any]
 
 
 class EventKind(str, Enum):
-    """Stable names for events emitted during one reasoning attempt."""
+    """Stable names for events emitted during one execution attempt."""
 
     OBSERVATION_RECORDED = "observation.recorded"
     CAPABILITY_RETRIEVED = "capability.retrieved"
@@ -34,7 +34,7 @@ class EventKind(str, Enum):
 
 
 class Outcome(str, Enum):
-    """The inspectable result of a reasoning attempt."""
+    """The inspectable result of an execution attempt."""
 
     PENDING = "pending"
     SUCCEEDED = "succeeded"
@@ -68,7 +68,7 @@ class Capability:
 
 @dataclass(frozen=True)
 class ExecutionEvent:
-    """An immutable, ordered explanation of a reasoning-cycle event."""
+    """An immutable, ordered explanation of an execution-attempt event."""
 
     sequence: int
     kind: EventKind
@@ -125,7 +125,7 @@ class Memory:
 
 @dataclass
 class Workspace:
-    """The inspectable active state for one deterministic reasoning attempt."""
+    """The inspectable active state for one deterministic execution attempt."""
 
     observation: Observation | None = None
     frame: ObservationFrame | None = None
