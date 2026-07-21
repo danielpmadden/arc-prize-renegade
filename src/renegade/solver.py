@@ -13,7 +13,7 @@ from enum import Enum
 from typing import Any, Iterable
 
 from .tasks import Task, inspect_task
-from .scene import ObjectSelector, SelectorKind, Scene
+from .scene import ObjectPredicate, ObjectSelector, PredicateKind, RelationKind, SelectorKind, Scene
 
 Grid = tuple[tuple[Any, ...], ...]
 
@@ -146,6 +146,33 @@ def apply(operation: Operation, grid: Grid) -> Grid:
         extracted = scene.extract(ObjectSelector(SelectorKind(operation.parameter("selector"))))
         if extracted is None: raise ValueError("object selector is ambiguous or absent")
         return extracted
+    if k in {"render_objects", "recolor_objects", "repeat_object", "render_related"}:
+        bg = operation.parameter("background")
+        scene = Scene.from_grid(grid, bg, operation.parameter("connectivity") if any(name == "connectivity" for name, _ in operation.parameters) else 4)
+        if k == "render_related":
+            reference = ObjectSelector(SelectorKind(operation.parameter("reference"))).select(scene)
+            if reference is None: raise ValueError("reference selector is ambiguous or absent")
+            selected = scene.related(reference, RelationKind(operation.parameter("relation")))
+        else:
+            selected = scene.select(ObjectPredicate(PredicateKind(operation.parameter("predicate"))))
+        if not selected: raise ValueError("object predicate selected no objects")
+        if k in {"render_objects", "render_related"}:
+            return scene.render(selected, rebase=operation.parameter("canvas") == "bbox", background=bg)
+        if k == "recolor_objects":
+            color = operation.parameter("color"); canvas = [list(row) for row in grid]
+            for obj in selected:
+                for r, c in obj.cells: canvas[r][c] = color
+            return tuple(tuple(row) for row in canvas)
+        if k == "repeat_object":
+            if len(selected) != 1: raise ValueError("repeat requires a unique selected object")
+            obj=selected[0]; count=operation.parameter("count"); count = len(scene.objects) if count == "object_count" else count; axis=operation.parameter("axis"); gap=operation.parameter("gap")
+            if not isinstance(count, int) or count < 1 or count > 8: raise ValueError("repeat count outside bound")
+            step=(obj.bounding_box.height + gap, 0) if axis == "vertical" else (0, obj.bounding_box.width + gap)
+            height = obj.bounding_box.height + step[0] * (count - 1); width = obj.bounding_box.width + step[1] * (count - 1)
+            canvas=[[bg]*width for _ in range(height)]
+            for n in range(count):
+                for r,c in obj.mask: canvas[r+n*step[0]][c+n*step[1]]=obj.color
+            return tuple(tuple(row) for row in canvas)
     if k == "translate":
         dr, dc = operation.parameter("offset"); bg = operation.parameter("background"); canvas = [[bg] * len(grid[0]) for _ in grid]
         for r, row in enumerate(grid):
@@ -213,6 +240,27 @@ def _infer_primitives(pairs: tuple[tuple[Grid, Grid], ...]) -> tuple[Program, ..
     if len(backgrounds) == 1:
         bg = next(iter(backgrounds)); candidates += [Operation.make("crop", background=bg), Operation.make("fill", background=bg, color="enclosing"), Operation.make("outline", background=bg)]
         candidates += [Operation.make("extract_object", background=bg, selector=kind.value) for kind in SelectorKind]
+        # Search uses a deliberately smaller subset of the public predicate
+        # vocabulary; all predicates remain executable, while search cost stays bounded.
+        search_predicates = (PredicateKind.ALL, PredicateKind.BORDER, PredicateKind.INTERIOR,
+                             PredicateKind.LARGEST, PredicateKind.SMALLEST, PredicateKind.WIDEST,
+                             PredicateKind.TALLEST)
+        dimension_changes = any((len(source), len(source[0])) != (len(target), len(target[0])) for source, target in pairs)
+        for predicate in search_predicates:
+            candidates.append(Operation.make("render_objects", background=bg, predicate=predicate.value, canvas="input"))
+            if dimension_changes:
+                candidates.append(Operation.make("render_objects", background=bg, predicate=predicate.value, canvas="bbox"))
+            for color in sorted({v for _, target in pairs for row in target for v in row}, key=repr):
+                candidates.append(Operation.make("recolor_objects", background=bg, predicate=predicate.value, color=color))
+        if dimension_changes:
+            for predicate in search_predicates:
+                for axis in ("horizontal", "vertical"):
+                    for gap in (0, 1):
+                        candidates.append(Operation.make("repeat_object", background=bg, predicate=predicate.value, count="object_count", axis=axis, gap=gap))
+        for reference in SelectorKind:
+            for relation in (RelationKind.LEFT_OF, RelationKind.RIGHT_OF, RelationKind.ABOVE, RelationKind.BELOW, RelationKind.SAME_SHAPE, RelationKind.SAME_COLOR):
+                for canvas in ("input", "bbox"):
+                    candidates.append(Operation.make("render_related", background=bg, reference=reference.value, relation=relation.value, canvas=canvas))
         h, w = len(pairs[0][0]), len(pairs[0][0][0])
         candidates += [Operation.make("translate", offset=(dr,dc), background=bg) for dr in range(-h,h+1) for dc in range(-w,w+1)]
     return tuple(Program((op,)) for op in candidates if _fits(op, pairs))
@@ -233,6 +281,7 @@ def _prefix_operations(sources: tuple[Grid, ...], targets: tuple[Grid, ...], con
         # prefixes so later fitted operations can consume a smaller state.
         ops.append(Operation.make("crop", background=bg))
         ops += [Operation.make("extract_object", background=bg, selector=kind.value) for kind in SelectorKind]
+        ops += [Operation.make("render_objects", background=bg, predicate=predicate.value, canvas=canvas) for predicate in (PredicateKind.ALL, PredicateKind.BORDER, PredicateKind.INTERIOR, PredicateKind.LARGEST, PredicateKind.SMALLEST, PredicateKind.WIDEST, PredicateKind.TALLEST) for canvas in ("input", "bbox")]
         ops += [Operation.make("translate", offset=(dr,dc), background=bg) for dr in range(-config.max_displacement,config.max_displacement+1) for dc in range(-config.max_displacement,config.max_displacement+1) if (dr,dc) != (0,0)]
     return tuple(ops)
 
@@ -294,7 +343,7 @@ def solve_task(task: Task, *, max_depth: int = 2, max_candidates: int = 512, con
     # Preserve the prior primitive preference (identity, rotations, reflections,
     # recolor, then shape/translation operations) as the deterministic
     # ambiguity fallback; composition remains secondary to a shorter program.
-    operation_rank = {"identity": 0, "rotate": 1, "reflect": 2, "recolor": 3, "crop": 4, "extract_object": 5, "fill": 6, "outline": 7, "translate": 8}
+    operation_rank = {"identity": 0, "rotate": 1, "reflect": 2, "recolor_objects": 3, "recolor": 4, "crop": 5, "extract_object": 6, "fill": 7, "outline": 8, "translate": 9, "render_objects": 10, "render_related": 11, "repeat_object": 12}
     ordered = tuple(sorted(valid.values(), key=lambda p: (p.depth, tuple(operation_rank.get(op.kind, 99) for op in p.operations), p.canonical)))
     predictions_by_output: dict[tuple[Grid, ...], list[Program]] = defaultdict(list)
     executable: list[Program] = []
