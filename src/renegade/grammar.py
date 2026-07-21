@@ -13,7 +13,7 @@ from enum import Enum
 import json
 from typing import Any, Callable
 
-from .scene import ObjectPredicate, PredicateKind, Scene, SceneObject
+from .scene import ObjectPredicate, PredicateKind, RelationKind, Scene, SceneObject
 
 Grid = tuple[tuple[Any, ...], ...]
 
@@ -88,6 +88,13 @@ def _unique(objects: tuple[SceneObject,...]) -> SceneObject:
     if len(objects) != 1: raise ValueError("selection is absent or ambiguous")
     return objects[0]
 def _singleton(obj: SceneObject) -> tuple[SceneObject,...]: return (obj,)
+def _related(scene: Scene, source: SceneObject, *, relation: str) -> tuple[SceneObject,...]:
+    """Return the ordered objects related to one explicitly unique source.
+
+    The ``unique`` expression supplying ``source`` makes ambiguity a visible
+    execution failure rather than an incidental ordering choice.
+    """
+    return scene.related(source, RelationKind(relation))
 def _recolor(objects: tuple[SceneObject,...], *, color: Any) -> tuple[SceneObject,...]:
     return tuple(SceneObject(color, x.cells, x.bounding_box, x.mask, x.scene_shape) for x in objects)
 def _canvas(scene: Scene, *, mode: str) -> CanvasSpec: return CanvasSpec(mode, scene.background)
@@ -108,6 +115,7 @@ DEFAULT_REGISTRY=OperationRegistry((
     OperationSpec("filter","selection",(ValueType.OBJECT_SET,),ValueType.OBJECT_SET,(("predicate",("all","largest","smallest","border","interior")),),_filter,cost=1,capability="object_render"),
     OperationSpec("unique","selection",(ValueType.OBJECT_SET,),ValueType.OBJECT,(),_unique,cost=1,capability="object_render"),
     OperationSpec("singleton","selection",(ValueType.OBJECT,),ValueType.OBJECT_SET,(),_singleton,cost=1,capability="object_render"),
+    OperationSpec("related","selection",(ValueType.SCENE,ValueType.OBJECT),ValueType.OBJECT_SET,(("relation",(RelationKind.LEFT_OF.value,RelationKind.RIGHT_OF.value,RelationKind.ABOVE.value,RelationKind.BELOW.value)),),_related,cost=1,capability="object_render"),
     OperationSpec("recolor_set","transform",(ValueType.OBJECT_SET,),ValueType.OBJECT_SET,(("color",tuple(range(10))),),_recolor,cost=1,capability="object_render"),
     OperationSpec("canvas","layout",(ValueType.SCENE,),ValueType.CANVAS_SPEC,(("mode",("tight","preserve")),),_canvas,cost=1,capability="object_render"),
     OperationSpec("render","render",(ValueType.OBJECT_SET,ValueType.CANVAS_SPEC),ValueType.GRID,(),_render,cost=1,capability="object_render"),
@@ -142,6 +150,14 @@ def _chain(registry: OperationRegistry, background: int, color: int, predicate: 
     if color != -1: selected=registry.expression("recolor_set",(selected,),{"color":color})
     return registry.expression("render",(selected,registry.expression("canvas",(scene,),{"mode":mode})))
 
+def _relation_chain(registry: OperationRegistry, background: int, color: int, source_predicate: str, relation: str, mode: str) -> Expr:
+    root=registry.expression("input"); scene=registry.expression("segment",(root,),{"background":background,"connectivity":4})
+    objects=registry.expression("objects",(scene,))
+    source=registry.expression("unique",(registry.expression("filter",(objects,),{"predicate":source_predicate}),))
+    selected=registry.expression("related",(scene,source),{"relation":relation})
+    if color != -1: selected=registry.expression("recolor_set",(selected,),{"color":color})
+    return registry.expression("render",(selected,registry.expression("canvas",(scene,),{"mode":mode})))
+
 def search(training: tuple[tuple[Grid,Grid],...], test_inputs: tuple[Grid,...], *, config: GrammarConfig=GrammarConfig(), registry: OperationRegistry=DEFAULT_REGISTRY) -> GrammarResult:
     """Enumerate a finite typed vertical slice; targets only validate completed programs."""
     if not training: raise ValueError("training pairs required")
@@ -159,6 +175,19 @@ def search(training: tuple[tuple[Grid,Grid],...], test_inputs: tuple[Grid,...], 
          except (ValueError,TypeError,IndexError): fits=False
          if fits: found.append(expr); telemetry["retained"][expr.output_type.value]+=1
          else: telemetry["rejected"]+=1
+      # Preserve the smaller direct-program search when it already explains
+      # all training pairs; relation search is the bounded fallback.
+      if found: continue
+      for source_predicate in ("largest","smallest","border","interior"):
+       for relation in (RelationKind.LEFT_OF.value, RelationKind.RIGHT_OF.value, RelationKind.ABOVE.value, RelationKind.BELOW.value):
+        for color in [-1,*palette]:
+         for mode in ("tight","preserve"):
+          if len(found)+telemetry["rejected"] >= config.max_candidates: telemetry["truncated"]=True; break
+          expr=_relation_chain(registry,bg,color,source_predicate,relation,mode); telemetry["generated"][expr.output_type.value]+=1
+          try: fits=all(evaluate(expr,a,registry=registry,cache=cache)==b for a,b in training)
+          except (ValueError,TypeError,IndexError): fits=False
+          if fits: found.append(expr); telemetry["retained"][expr.output_type.value]+=1
+          else: telemetry["rejected"]+=1
     found=sorted(set(found),key=lambda x:(x.canonical.count("("),x.canonical))
     if not found: return GrammarResult(None,(),(),dict(telemetry),GrammarFailure("search","no exact typed composition within budget"))
     selected=found[0]
