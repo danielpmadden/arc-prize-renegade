@@ -142,12 +142,17 @@ def _chain(registry: OperationRegistry, background: int, color: int, predicate: 
     if color != -1: selected=registry.expression("recolor_set",(selected,),{"color":color})
     return registry.expression("render",(selected,registry.expression("canvas",(scene,),{"mode":mode})))
 
+def _expression_depth(expr: Expr) -> int:
+    """Return the longest operation path below ``expr`` (excluding input)."""
+    if expr.operation == "input": return 0
+    return 1 + max((_expression_depth(argument) for argument in expr.arguments), default=0)
+
 def search(training: tuple[tuple[Grid,Grid],...], test_inputs: tuple[Grid,...], *, config: GrammarConfig=GrammarConfig(), registry: OperationRegistry=DEFAULT_REGISTRY) -> GrammarResult:
     """Enumerate a finite typed vertical slice; targets only validate completed programs."""
     if not training: raise ValueError("training pairs required")
     palette=sorted({v for a,b in training for g in (a,b) for row in g for v in row}, key=repr)[:config.max_literals]
     backgrounds=sorted({max(Counter(v for row in a for v in row), key=lambda x:(Counter(v for row in a for v in row)[x],repr(x))) for a,_ in training},key=repr)[:config.max_scene_interpretations]
-    telemetry={"generated":defaultdict(int),"rejected":0,"retained":defaultdict(int),"cache_hits":0,"cache_misses":0,"scene_interpretations":len(backgrounds),"truncated":False,"max_candidates":config.max_candidates}
+    telemetry={"generated":defaultdict(int),"rejected":0,"depth_rejected":0,"retained":defaultdict(int),"cache_hits":0,"cache_misses":0,"scene_interpretations":len(backgrounds),"truncated":False,"max_candidates":config.max_candidates,"max_depth":config.max_depth}
     found=[]; cache={}
     for bg in backgrounds:
       for predicate in ("all","largest","smallest","border","interior"):
@@ -155,6 +160,9 @@ def search(training: tuple[tuple[Grid,Grid],...], test_inputs: tuple[Grid,...], 
         for mode in ("tight","preserve"):
          if len(found)+telemetry["rejected"] >= config.max_candidates: telemetry["truncated"]=True; break
          expr=_chain(registry,bg,color,predicate,mode); telemetry["generated"][expr.output_type.value]+=1
+         if _expression_depth(expr) > config.max_depth:
+             telemetry["depth_rejected"] += 1
+             continue
          try: fits=all(evaluate(expr,a,registry=registry,cache=cache)==b for a,b in training)
          except (ValueError,TypeError,IndexError): fits=False
          if fits: found.append(expr); telemetry["retained"][expr.output_type.value]+=1
