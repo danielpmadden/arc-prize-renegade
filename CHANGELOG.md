@@ -89,3 +89,11 @@ current tree, see [MILESTONES](docs/roadmap/MILESTONES.md).
 
 ### Added
 - Add a bounded deterministic ARC solver vertical slice with executable whole-grid symbolic programs, exact training validation, test prediction, local CLI solving, and local-only benchmarking.
+
+## Unreleased
+
+- Added deterministic official ARC aggregate corpus loading with public solver
+  tasks and evaluator-private expected outputs.
+- Added cardinality-correct benchmark scoring, structured search telemetry,
+  bounded benchmark controls, atomic report writing, and benchmark comparison.
+- Enabled non-background crop as a bounded compositional prefix.

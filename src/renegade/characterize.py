@@ -9,6 +9,7 @@ from typing import Any
 from .corpus import GOLDEN_GRIDS
 from .diagnostics import summarize_pipeline
 from .pipeline import inspect_grid
+from .arc_corpus import load_official_corpus
 
 BOUNDARY_CASES: tuple[tuple[str, object], ...] = (
     ("one_row", ((1, 0, 1, 0, 1),)),
@@ -56,8 +57,27 @@ def characterize() -> tuple[dict[str, object], ...]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description="Characterize Renegade's implemented structural pipeline.")
     parser.add_argument("--json", action="store_true", help="Emit deterministic JSON.")
+    parser.add_argument("--challenges", help="Official aggregate challenges JSON.")
+    parser.add_argument("--solutions", help="Official aggregate solutions JSON (validation only).")
+    parser.add_argument("--output", help="Optional JSON output path.")
     args = parser.parse_args(argv)
-    records = characterize()
+    if bool(args.challenges) != bool(args.solutions): parser.error("--challenges and --solutions must be supplied together")
+    if args.challenges:
+        corpus = load_official_corpus(args.challenges, args.solutions)
+        relationships = []
+        for item in corpus:
+            signs = set()
+            for pair in item.public_task.training_pairs:
+                source, target = pair.input_grid.raw_grid, pair.output_grid.raw_grid
+                output_shape, input_shape = (len(target), len(target[0])), (len(source), len(source[0]))
+                signs.add(1 if output_shape > input_shape else -1 if output_shape < input_shape else 0)
+            relationships.append("same" if signs == {0} else "smaller" if signs == {-1} else "larger" if signs == {1} else "mixed")
+        records = {"task_count": len(corpus), "train_pair_count": sum(len(x.public_task.training_pairs) for x in corpus), "test_input_count": sum(len(x.public_task.test_inputs) for x in corpus), "multiple_test_input_tasks": sum(len(x.public_task.test_inputs) > 1 for x in corpus), "dimension_relationship_distribution": {name: relationships.count(name) for name in ("same", "smaller", "larger", "mixed")}, "dimension_preserving_tasks": relationships.count("same"), "consistently_shrinking_tasks": relationships.count("smaller"), "consistently_growing_tasks": relationships.count("larger"), "mixed_dimension_tasks": relationships.count("mixed")}
+    else:
+        records = characterize()
+    if args.output:
+        from pathlib import Path
+        output = Path(args.output); output.parent.mkdir(parents=True, exist_ok=True); output.write_text(json.dumps(records, sort_keys=True, separators=(",", ":"), default=list), encoding="utf-8")
     if args.json:
         print(json.dumps(records, sort_keys=True, separators=(",", ":"), default=list))
     else:

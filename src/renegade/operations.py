@@ -20,6 +20,7 @@ _OPERATION_SPECS = (
     OperationSpec("rotate", "geometry", "turns: 1, 2, or 3", "asymmetric rectangular grid", "90/180/270 degree rotation", False, False, False, True, True, "constructive asymmetric world"),
     OperationSpec("reflect", "geometry", "axis: horizontal or vertical", "asymmetric grid about selected axis", "same shape", True, False, False, True, True, "constructive asymmetric world"),
     OperationSpec("crop", "shape", "background: observed color", "non-background extent", "bounding rectangle", False, True, False, True, False, "excluded: safe compositions not yet constructively modelled"),
+    OperationSpec("extract_object", "object", "background; unique selector", "unique selected component", "selected component bounding rectangle", False, True, True, True, False, "excluded: object curriculum not yet implemented"),
     OperationSpec("translate", "geometry", "offset: bounded (dr, dc); background", "movable non-background content", "same shape", True, True, False, True, True, "constructive padded world"),
     OperationSpec("fill", "region", "background; color='enclosing' or color", "enclosed background region", "same shape", True, True, True, True, False, "excluded: safe composition model not yet implemented"),
     OperationSpec("outline", "shape", "background", "solid interior cell", "same shape", True, True, True, True, False, "excluded: safe composition model not yet implemented"),

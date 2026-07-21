@@ -79,6 +79,19 @@ values fail through existing deterministic validation.
 
 ## Experimental solver vertical slice
 
+## Object reasoning foundation v1
+
+`scene.py` introduces a separate immutable scene layer for symbolic object
+reasoning. Its initial segmentation policy infers a deterministic background
+and forms four-connected, same-colour, non-background components. A
+`SceneObject` retains its cells, bounding box, translation-invariant mask,
+colour, and size. `Scene` derives a small canonical relation set, supports
+unique extremal selectors, and renders exactly back to the original grid.
+
+The solver's `extract_object` operation uses that representation only when a
+selector is unambiguous on every training pair. Test execution failures remain
+explicit and cannot become predictions.
+
 Above independent task inspection, `solver.py` performs a separate bounded
 cross-grid analysis. It records normalized-shape region correspondences and
 objective changed-cell summaries, generates a finite ordered vocabulary of

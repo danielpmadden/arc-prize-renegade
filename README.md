@@ -176,6 +176,31 @@ python -m renegade.solve path/to/task.json --json
 python -m renegade.benchmark path/to/local/tasks --json
 ```
 
+### Official ARC aggregate workflow
+
+The local benchmark also accepts the official two-file training aggregate
+without creating merged files.  Challenge data is parsed into a public `Task`;
+solution labels stay in a separate evaluator record and are compared only
+after `solve_task` returns.  Numeric ARC identifiers are reported unchanged,
+while the internal validated local name is deterministically prefixed (for
+example, `00576224` becomes `arc_00576224`).
+
+PowerShell example:
+
+```powershell
+python -m renegade.benchmark `
+  --challenges .\arc-agi_training_challenges.json `
+  --solutions .\arc-agi_training_solutions.json `
+  --limit 10 --max-depth 2 --max-candidates 512 --progress `
+  --output .\experiments\official-arc\smoke-depth2.json
+```
+
+Use `--validate-only` for corpus validation, `--filter dimension-preserving`
+or `--filter dimension-changing` for train-pair shape subsets, and
+`python -m renegade.compare_benchmarks before.json after.json` for an
+evaluation-only report comparison.  `python -m renegade.characterize
+--challenges ... --solutions ... --json` records aggregate corpus counts.
+
 Implemented program operations are identity, global recoloring, rotation,
 reflection, non-background crop, bounded translation, enclosed-region fill,
 and outline. Short deterministic compositions are enumerated at depth two.
