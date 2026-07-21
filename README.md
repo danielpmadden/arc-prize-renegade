@@ -107,7 +107,7 @@ learning. Relationships and archetypes make no semantic inference.
 
 Future work is governed by the architecture and capability documents. It may
 add carefully validated layers above structural archetypes, but this checkout
-does not claim those layers exist. Consult `MILESTONES.md` for verified history
+does not claim those layers exist. Consult `docs/roadmap/MILESTONES.md` for verified history
 and current-tree audit corrections, not for a forward plan.
 
 ## Contributing
@@ -120,4 +120,21 @@ speculation in both code and documentation.
 ## License
 
 See [LICENSE](LICENSE). Notices, privacy, and security information are in
-`NOTICE.md`, `PRIVACY.md`, and `SECURITY.md`.
+`NOTICE.md`, `docs/legal/PRIVACY.md`, and `.github/SECURITY.md`.
+
+## Characterization
+
+Pass 10 adds a deterministic empirical characterization suite for the current
+structural layers. Run it in readable or machine-readable form:
+
+```bash
+python -m renegade.characterize
+python -m renegade.characterize --json
+```
+
+The suite executes the 19-case golden corpus, targeted boundary cases, exact
+normalized snapshots, and 107 exhaustive binary/ternary tiny grids. It checks
+repeatability, event ordering, registry-equivalent uniqueness, provenance and
+frame references, graph/result agreement, and diagnostics non-mutation. See
+the [capability baseline](docs/reports/pass-10-capability-baseline.md) for
+observed limits and non-promotional findings.

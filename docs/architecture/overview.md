@@ -52,3 +52,19 @@ meaning, recognizes objects, infers intent, or solves ARC tasks.
 For an entry point and commands, see the [root README](../../README.md). For
 document roles and preserved pass journals, see the
 [documentation guide](../README.md).
+
+## Characterization evidence
+
+`python -m renegade.characterize` executes the packaged 19-case corpus and
+selected boundary inputs, reporting existing record counts, compression ratios,
+and explicit failure reasons. `--json` emits a deterministic JSON array. The
+utility only runs `inspect_grid` and summarizes its returned records; it does
+not create cognitive artifacts. Unit tests additionally exhaust 107 tiny
+binary and bounded ternary grids, validate cross-layer references and event
+order, and retain exact normalized snapshots for six representative inputs.
+
+The direct relationship policy accepts at most 64 supplied percepts and rejects
+65 or more with `ValueError`. Pipeline inputs that produce too many percepts
+therefore fail explicitly during relationship derivation. Non-empty rectangular
+list/tuple grids are supported; malformed grid structures and unsupported cell
+values fail through existing deterministic validation.

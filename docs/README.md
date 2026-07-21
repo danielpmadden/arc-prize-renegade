@@ -1,29 +1,31 @@
 # Documentation Guide
 
-This index separates current implementation documentation from governance,
-specification, and preserved research history.
+This index separates current implementation evidence from governance,
+specification, historical records, and research journals.
 
 ## Current implementation
 
 - [Architecture overview](architecture/overview.md) is the canonical concise
-  description of the structural pipeline, boundaries, and package modules.
-- [Root README](../README.md) is the repository entry point, quick start, and
-  capability summary.
+  description of the implemented structural pipeline and its boundaries.
+- [Capability baseline report](reports/pass-10-capability-baseline.md) records
+  observed Pass 10 characterization evidence and known limits.
+- [Root README](../README.md) is the repository entry point and quick start.
 
-## Governance and specifications
+## Foundations and governance
 
-- [`EPISTEMOLOGY.md`](../EPISTEMOLOGY.md) defines how repository claims are
-  classified.
-- [`CONSTITUTION.md`](../CONSTITUTION.md),
-  [`CAPABILITY_CONTRACT.md`](../CAPABILITY_CONTRACT.md), `CONCEPTS.md`,
-  `LIFECYCLE.md`, and `LINEAGE.md` define intended architecture and policy.
-  They are not claims that every described capability exists.
-- [`MILESTONES.md`](../MILESTONES.md) is append-only verified history and
-  includes current-tree audit corrections.
+- [`foundations/`](foundations/) holds epistemic rules and intended capability,
+  concept, lifecycle, lineage, and emergence specifications. They are not
+  implementation claims.
+- [`governance/CONSTITUTION.md`](governance/CONSTITUTION.md) states enduring
+  design principles.
+- [`roadmap/MILESTONES.md`](roadmap/MILESTONES.md) is append-only verified
+  history and includes current-tree audit corrections.
+- [`legal/PRIVACY.md`](legal/PRIVACY.md), root `LICENSE`, root `NOTICE.md`, and
+  [`.github/SECURITY.md`](../.github/SECURITY.md) contain legal and security
+  material.
 
 ## Research journals
 
-The numbered files in `research/` preserve implementation-pass rationale and
-historical context. They are intentionally retained and should be read with
-their status language; use the architecture overview and source/tests to make
-claims about the checkout today.
+The numbered files in [`research/`](research/) preserve implementation-pass
+rationale and historical context. Use the architecture overview, source, and
+tests—not a journal alone—to state current behavior.
