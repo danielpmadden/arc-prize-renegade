@@ -66,3 +66,5 @@ __all__ = [
 ]
 from .solver import ChangeKind, ChangeSummary, Correspondence, Operation, Program, SolverResult, Validation, apply, correspondence, execute, solve_task
 __all__ += ["ChangeKind", "ChangeSummary", "Correspondence", "Operation", "Program", "SolverResult", "Validation", "apply", "correspondence", "execute", "solve_task"]
+from .generator import DIFFICULTIES, GeneratedTask, canonical_hash, difficulty_spec, generate_batch, generate_task, validate_generated
+__all__ += ["DIFFICULTIES", "GeneratedTask", "canonical_hash", "difficulty_spec", "generate_batch", "generate_task", "validate_generated"]

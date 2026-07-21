@@ -15,12 +15,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--output", type=Path)
     parser.add_argument("--json", action="store_true")
+    parser.add_argument("--force", action="store_true", help="allow writing into an existing output directory")
     args = parser.parse_args(argv)
     try:
         generated = generate_batch(args.seed, args.count, difficulty=args.difficulty)
     except (TypeError, ValueError) as error:
         parser.error(str(error))
     if args.output:
+        if args.output.exists() and any(args.output.iterdir()) and not args.force:
+            parser.error(f"refusing to overwrite non-empty output directory: {args.output}; use --force")
         args.output.mkdir(parents=True, exist_ok=True)
         for item in generated:
             (args.output / f"{item.task.identifier}.json").write_text(json.dumps(item.task_json(), sort_keys=True), encoding="utf-8")

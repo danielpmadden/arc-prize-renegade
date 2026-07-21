@@ -58,6 +58,7 @@ class RenegadeCoreTests(unittest.TestCase):
             "GridRole", "Task", "TaskGrid", "TaskKind", "TrainingPair", "inspect_task", "load_task",
             "TaskDiagnostics", "TaskGridDiagnostics", "TrainingPairDiagnostics", "summarize_task", "summarize_task_grid", "summarize_training_pair",
             "ChangeKind", "ChangeSummary", "Correspondence", "Operation", "Program", "SolverResult", "Validation", "apply", "correspondence", "execute", "solve_task",
+            "DIFFICULTIES", "GeneratedTask", "canonical_hash", "difficulty_spec", "generate_batch", "generate_task", "validate_generated",
         }
         self.assertEqual(set(renegade.__all__), expected)
         self.assertTrue(all(hasattr(renegade, name) for name in renegade.__all__))
