@@ -166,19 +166,3 @@ reflection, non-background crop, bounded translation, enclosed-region fill,
 and outline. Short deterministic compositions are enumerated at depth two.
 A prediction is not called test-correct unless a separately available expected
 test output is compared after solving.
-
-## Program-first synthetic task generator
-
-Generate new, reproducible symbolic tasks without downloading or embedding ARC
-data. Each task is sampled from a seeded compatible world and executed by the
-same solver program representation; expected outputs are private ground truth.
-
-```bash
-python -m renegade.generate --seed 42 --difficulty 2 --count 100 --output synthetic_tasks
-python -m renegade.generate --seed 42 --difficulty 2 --json
-```
-
-The current generator supports difficulties 1–3 (one to three composed
-whole-grid operations), at least two training pairs, and a hidden labeled test
-pair. Public task JSON is canonical ARC-shaped data; generation provenance and
-the symbolic program are written only to a separate `.meta.json` sidecar.

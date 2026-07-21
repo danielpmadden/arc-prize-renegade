@@ -24,10 +24,3 @@ Copy, deletion predicates, tiling, scale, richer object selectors, and general
 multi-step object programs are unsupported. The next highest-value capability
 is deterministic object selection plus copy/delete actions, while retaining
 exact cross-training validation and ambiguity reporting.
-
-## Synthetic generator addendum
-
-The local program-first generator is verified by replay and deterministic-seed
-tests. It creates new solver-language tasks and is not an ARC dataset or a
-claim of performance on ARC. Its immediate regression role is to expose solver
-failures by operation family and composition depth.

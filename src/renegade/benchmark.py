@@ -6,7 +6,7 @@ from .solver import solve_task
 from .tasks import load_task
 
 def main(argv=None):
- p=argparse.ArgumentParser();p.add_argument("path");p.add_argument("--json",action="store_true"); args=p.parse_args(argv); root=Path(args.path); files=[root] if root.is_file() else sorted(path for path in root.rglob("*.json") if not path.name.endswith(".meta.json")) if root.is_dir() else []
+ p=argparse.ArgumentParser();p.add_argument("path");p.add_argument("--json",action="store_true"); args=p.parse_args(argv); root=Path(args.path); files=[root] if root.is_file() else sorted(root.rglob("*.json")) if root.is_dir() else []
  rows=[]
  for file in files:
   try:

@@ -34,9 +34,3 @@ tests—not a journal alone—to state current behavior.
 
 `renegade.solver` is a bounded executable solver layer above task inspection.
 See `python -m renegade.solve --help` and the initial solver baseline report.
-
-## Synthetic generator
-
-`renegade.generator` produces deterministic program-first synthetic tasks from
-the solver's executable operations. `python -m renegade.generate --help`
-documents its local export interface.

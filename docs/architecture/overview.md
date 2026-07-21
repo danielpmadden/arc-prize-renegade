@@ -86,12 +86,3 @@ whole-grid programs, and accepts a program only after exact execution against
 every training output. It applies only exact survivors to test inputs; expected
 test outputs are evaluated only by the benchmark after prediction. This layer
 is experimental and does not alter the structural pipeline or its records.
-
-## Synthetic task generator
-
-`generator.py` is a separate, deterministic test-data producer that reuses
-`solver.Program` and `execute`. It samples a compatible world only after
-selecting a symbolic program, replays that program to make every training and
-test output, and validates replay before returning a task. Canonical task JSON
-contains only inputs and outputs; seed, operation provenance, and ground-truth
-program are private metadata sidecar data and are never supplied to the solver.

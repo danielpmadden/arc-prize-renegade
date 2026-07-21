@@ -89,8 +89,3 @@ current tree, see [MILESTONES](docs/roadmap/MILESTONES.md).
 
 ### Added
 - Add a bounded deterministic ARC solver vertical slice with executable whole-grid symbolic programs, exact training validation, test prediction, local CLI solving, and local-only benchmarking.
-
-## Unreleased — Synthetic generator
-
-### Added
-- Add a seeded, program-first synthetic symbolic-task generator, deterministic JSON export, private provenance sidecars, and a local generation command. Generated outputs are replayed from the solver transformation language; no external ARC corpus is used.
